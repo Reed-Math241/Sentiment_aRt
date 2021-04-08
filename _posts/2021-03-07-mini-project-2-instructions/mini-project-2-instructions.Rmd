@@ -1,0 +1,205 @@
+---
+title: "Mini Project 2 Instructions"
+description: |
+  Insert a short description of the post.
+author:
+  - name: First Last 
+  - name: First Last
+  - name: First Last
+date: 2021-03-07
+output:
+  distill::distill_article:
+    self_contained: false
+    code_folding: true
+categories:
+#Pick two from the list given below (and then remove the cats and scones).  
+  - cats
+  - scones
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+## Due: Thursday March 25th at 8:30 am
+
+
+## Project Requirements/Goals
+
+**Overall Goal:** The focus of this project is to create a blog post that tells a data story AND explains the process of getting from raw data to an answer in a well thought-out, engaging, and clearly explained way.
+
+The following tasks should be done as a group:
+
+* Determine a question and find a data source or data sources.
+* Write a medium length (~ 1000 words +/ 200 words) blog post. The post should:
+    + Tell a story/seek to answer a question with data.
+    + Explain the process of getting from raw data to an answer.
+    + Require you to do some *non-trivial* data wrangling and to join at least two data frames. (Scraping is optional.)
+        + Trivial wrangling: a few `mutate()`s and `select()`s
+    + Include R code in the output document so that you can walk the reader through how you went from question to answer.  
+    + Introduce the data and address what/who the data represent.
+    + Communicate uncertainty when appropriate. 
+        + Examples: 
+            + Margin of error
+            + Error bands
+            + Potential biases in the data
+    + Include at least 2 (at most 4) data visualization(s).
+    + Include at least one table.
+    + Include hyperlinks to the data sources and any other relevant sources.
+    + From the following list, pick two tags for your post and add them to the YAML
+        + Sports, Lifestyle, Culture, Science, US, World, Tech, Politics, Movies, Music, Television, Art, Books, Education, Food, Health
+        + Beyond the usual suspects (`dplyr`, `readr`, `ggplot2`, `tidyr`, ...), if there is an R package that was pretty essential to you post, feel free to also include the name of the package as a tag.
+    
+    
+* Decide if you would like to share the post on the course website.
+    + Note: Your github repo will remain private. I will grab your `_posts` folder and merge it with `_posts` folder for the class blog. 
+
+
+The following task should be completed **individually**:
+
+* Complete the [following form](https://forms.gle/x9EEEtByPmufkgFH6) to tell me whether or not you would like your group's blog post to be added to the class blog and to provide feedback on the division of labor.  
+
+## Group Assignments
+
+* I have created new groups.
+* You can find your group assignment [here](https://docs.google.com/spreadsheets/d/1fkPnyV8FPQ15PivEqjJzHRUI8XPzOlTz3tseSWOBeyU/edit?usp=sharing).
+* I have also created a group repository on GitHub for collaborating on your project.
+
+## Data/Code
+
+* If you pick a dataset that needs a LOT of wrangling, then I would recommend changing datasets or focusing on a cleaner subset.
+
+* You don't have to go with `echo = TRUE` for all of your wrangling if it will bog down/detract from the story.
+    + I have also enabled code folding (discussed more in the **Helpful `distill` Tips** Section), which should help with readability.
+
+* Feel free to use any data you want.
+    + You can use the API clients we have discussed in class or used in a lab.  
+    + You can use the R data packages your classmates created if they are now public.
+    + Or you can use entirely different data!
+
+## Helpful `distill` Tips
+
+* Each group repository contains the files of a starter `distill` website.  
+    + You should write your blog post in `mini-project-2-instructions.Rmd`
+    + Put any images you need in the `images` folder.
+    + Put any data you need in the data folder.  Below is an example of loading the data.  I use the [`here` package](https://here.r-lib.org/) to help R with the file path.
+
+```{r}
+library(tidyverse)
+library(here)
+# Here's an example of loading data
+# Note: The here package 
+dat_ex <- read_csv(here("_posts/2021-03-07-mini-project-2-instructions/data/mythbusters.csv"))
+```
+
+
+* Here is the [`distill` reference website](https://pkgs.rstudio.com/distill/), which covers much of the functionality of the package.
+
+* After syncing an RStudio project with your group's GitHub repo, your workflow should be:
+    + Pull updates from GitHub.
+    + Edit the `mini-project-2-instructions.Rmd`.
+    + Knit the `mini-project-2-instructions.Rmd`.
+    + Look over the HTML output document.
+    + Go to the **Build** tab in the upper-right and click "Build Website".
+    + Repeat.
+    + Push updates to GitHub.
+
+* Once you have decided on the name of your post, one group member should 
+    + Change: `title:` and `date:` in the YAML. 
+    + Run `distill::rename_post_dir("_posts/2021-03-05-mini-project-2-instructions")` to upload the directory name (and URL).
+    + Change the name of the `Rmd`.
+
+* I recommend including hyperlinks within the post for all references and I suggest you reference liberally.  You can include references using `[insert text](insert link)` (remove the back ticks).
+
+* The listing page (home page) will include a preview image for each post.  It will automatically pick the first plot encountered in your post until you specify otherwise with `preview = TRUE`:
+
+
+```{r, preview = TRUE}
+library(palmerpenguins)
+library(tidyverse)
+ggplot(data = penguins, mapping = aes(x = bill_length_mm, fill = species)) +
+  geom_density(alpha = 0.4)
+```
+
+* Currently, code chunks are set to be hidden (`code_folding: true` in the YAML) and the viewer must click "Show code" to see the chunk.  If you want to override folding for a specific chunk use, `code_folding = FALSE`:
+
+```{r, code_folding = FALSE}
+penguins %>%
+  count(species)
+```
+
+* One feature that is unique to `distill` (and not, to my knowledge currently available for other `Rmd`s) is the hoverable footnote.^[Check it out!]  (Hover over the superscript "1" in the knitted document.)
+
+* You can also include **asides** in the margin of the page with the `<aside>` HTML tag.
+
+
+<aside>
+Here is a short note that I have decided to include.
+</aside>
+
+<aside>
+![](images/reed-college-griffin-red.png){width=50%}
+</aside>
+
+* There are several ways to include display tables.  Here are a few options, which we will discuss in Week 6 Thursday's class.
+
+
+```{r, layout="l-body-outset"}
+# Use layout="l-body-outset" to allow table to be wider than main text
+
+# For a simple table, consider kable() in knitr
+library(knitr)
+penguins %>%
+  head() %>%
+  kable()
+
+# For tables with many rows and/or many columns, consider paged_table()
+library(rmarkdown)
+penguins %>%
+  paged_table(options = list(rows.print = 5, cols.print = 5))
+
+# For lots of flexibility, consider the gt package
+library(gt)
+penguins %>%
+  count(island, species) %>%
+  group_by(island) %>%
+  gt() %>%
+  tab_header(title = "Palmer's Penguins") %>%
+  tab_source_note(source_note = "Reference: Gorman KB, Williams TD, Fraser WR (2014)")
+```
+
+
+
+
+## Rubric
+
+I will grade the blog post by accessing them directly in your group GitHub repo.  Make sure the post is finalized and it is clear what file contains the post by the due date.
+
+
+When I assess your blog post, I will be looking for the following:
+
+* **The items listed above for what the blog should include.**
+
+In addition, I will be looking for:
+
+* Appropriate data wrangling
+* Any data visualizations 
+    + Make appropriate use of geoms and their aesthetics
+    + Contain helpful context
+    + Are clear and engaging
+    + Support the text
+* Any tables are easy to read and support the text.
+* The text is well organized and well-written.
+* The code is appropriate, well organized and well-written.
+* I can follow the data story (i.e., it is clear how you got from raw data to answer).
+* The post is creative and engaging.
+* Any statistical arguments are clear and accurate.
+* The writing is for a non-technical audience.
+
+
+
+
+
+

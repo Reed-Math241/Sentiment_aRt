@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+  <channel>
+    <title>Math 241 Blog</title>
+    <link>https://reed-math241.github.io/blog/</link>
+    <atom:link href="https://reed-math241.github.io/blog/index.xml" rel="self" type="application/rss+xml"/>
+    <description>Math 241 Blog
+</description>
+    <image>
+      <title>Math 241 Blog</title>
+      <url>https://reed-math241.github.io/blog/images/reed-college-griffin-red.png</url>
+      <link>https://reed-math241.github.io/blog/</link>
+    </image>
+    <generator>Distill</generator>
+    <lastBuildDate>Sun, 07 Mar 2021 00:00:00 +0000</lastBuildDate>
+    <item>
+      <title>Mini Project 2 Instructions</title>
+      <dc:creator>First Last</dc:creator>
+      <dc:creator>First Last</dc:creator>
+      <dc:creator>First Last</dc:creator>
+      <link>https://reed-math241.github.io/blog/posts/2021-03-07-mini-project-2-instructions</link>
+      <description>Insert a short description of the post.</description>
+      <category>cats</category>
+      <category>scones</category>
+      <guid>https://reed-math241.github.io/blog/posts/2021-03-07-mini-project-2-instructions</guid>
+      <pubDate>Sun, 07 Mar 2021 00:00:00 +0000</pubDate>
+      <media:content url="https://reed-math241.github.io/blog/posts/2021-03-07-mini-project-2-instructions/mini-project-2-instructions_files/figure-html5/unnamed-chunk-2-1.png" medium="image" type="image/png" width="1248" height="768"/>
+    </item>
+  </channel>
+</rss>

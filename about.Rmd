@@ -1,0 +1,8 @@
+---
+title: "Reed Math 241"
+image: "images/reed-college-griffin-red.png"
+output:
+  postcards::jolla
+---
+ 
+This is the blog of the [Reed Math 241 Data Science class](https://reed-statistics.github.io/math241s21/).  In this class, the students learn to explore, wrangle, visualize, and summarize data to tell stories with data.  

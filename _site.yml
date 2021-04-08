@@ -1,0 +1,21 @@
+name: "blog"
+title: "Math 241 Blog"
+description: |
+  Math 241 Blog
+base_url: https://reed-math241.github.io/blog/  
+output_dir: "docs"
+creative_commons: CC BY
+favicon: images/reed-college-griffin-red.png
+navbar:
+  logo: images/reed-college-griffin-white.png
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
+output: distill::distill_article
+collections:
+  posts:
+    share: [twitter, linkedin]
+    citations: false
+theme: theme.css     

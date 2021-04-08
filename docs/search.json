@@ -1,0 +1,19 @@
+{
+  "articles": [
+    {
+      "path": "about.html",
+      "title": "Reed Math 241",
+      "author": [],
+      "contents": "\n\n          \n      \n      \n      \n      Math 241 Blog\n      \n      \n      Home\n      About\n      ☰\n      \n      \n      \n        \n          \n            Reed Math 241\n          \n          \n            \n              This is the blog of the Reed Math 241 Data Science class. In this class, the students learn to explore, wrangle, visualize, and summarize data to tell stories with data.\n            \n            \n              This is the blog of the Reed Math 241 Data Science class. In this class, the students learn to explore, wrangle, visualize, and summarize data to tell stories with data.\n            \n          \n\n          \n            \n              \n          \n\n          \n            \n              \n                              \n            \n          \n        \n      \n    \n\n    \n    \n    ",
+      "last_modified": "2021-03-08T09:21:18-08:00"
+    },
+    {
+      "path": "index.html",
+      "title": "Math 241 Blog",
+      "author": [],
+      "contents": "\n\n\n\n",
+      "last_modified": "2021-03-08T09:21:19-08:00"
+    }
+  ],
+  "collections": ["posts/posts.json"]
+}

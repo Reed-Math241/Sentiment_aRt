@@ -1,0 +1,5 @@
+---
+title: "Math 241 Blog"
+site: distill::distill_website
+listing: posts
+---
