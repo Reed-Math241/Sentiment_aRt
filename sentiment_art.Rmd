@@ -1,0 +1,71 @@
+---
+title: "sentiment_art"
+author: "Maxwell"
+date: "4/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(generativeart)
+library(gutenbergr)
+
+```
+
+```{r}
+wild <- gutenberg_download(215)
+
+nrc <- get_sentiments("nrc")
+afinn <- get_sentiments("afinn")
+
+wild_afinn <- wild %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  count(word, sort = TRUE) %>%
+  inner_join(afinn, by = "word") %>%
+  arrange(desc(n))
+
+senti <- sum(wild_afinn$n*wild_afinn$value)/sum(wild_afinn$n) * 10000
+
+senti <- abs(round(senti))
+
+```
+
+```{r}
+#generativeart
+
+IMG_DIR <- "img_new/"
+IMG_SUBDIR <- "everything/"
+IMG_SUBDIR2 <- "handpicked/"
+IMG_PATH <- paste0(IMG_DIR, IMG_SUBDIR)
+
+LOGFILE_DIR <- "logfile/"
+LOGFILE <- "logfile.csv"
+LOGFILE_PATH <- paste0(LOGFILE_DIR, LOGFILE)
+
+# create the directory structure
+generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
+
+# include a specific formula, for example:
+my_formula <- list(
+  x = quote(runif(1, -1, 1) * x_i^2 - sin(y_i^2)),
+  y = quote(runif(1, -1, 1) * y_i^2 - cos(x_i^2))
+)
+
+generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ...) {
+    set.seed(senti)
+    file_name <- generate_filename(senti, filetype)
+    logfile <- check_logfile_existence()
+    logfile <- generate_logfile_entry(logfile, formula, senti, file_name)
+    df <- generate_data(formula)
+    plot <- generate_plot(df, file_name, polar, filetype, ...)
+}
+
+# call the main function to create five images with a polar coordinate system
+generate_img_fix(formula = my_formula, senti, polar = TRUE, filetype = "png", color = "black", background_color = "white")
+
+```
+
