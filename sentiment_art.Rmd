@@ -16,27 +16,8 @@ library(gutenbergr)
 
 ```
 
-```{r}
-wild <- gutenberg_download(215)
-
-nrc <- get_sentiments("nrc")
-afinn <- get_sentiments("afinn")
-
-wild_afinn <- wild %>%
-  unnest_tokens(output = word, input = text, token = "words") %>%
-  count(word, sort = TRUE) %>%
-  inner_join(afinn, by = "word") %>%
-  arrange(desc(n))
-
-senti <- sum(wild_afinn$n*wild_afinn$value)/sum(wild_afinn$n) * 10000
-
-senti <- abs(round(senti))
-
-```
 
 ```{r}
-#generativeart
-
 IMG_DIR <- "img_new/"
 IMG_SUBDIR <- "everything/"
 IMG_SUBDIR2 <- "handpicked/"
@@ -46,13 +27,51 @@ LOGFILE_DIR <- "logfile/"
 LOGFILE <- "logfile.csv"
 LOGFILE_PATH <- paste0(LOGFILE_DIR, LOGFILE)
 
-# create the directory structure
+# directory
 generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
+
+# give me a gutenburg text number 
+
+text_num <- 215
+
+# gen art function from gutenberg
+
+library(tidyverse)
+library(generativeart)
+library(gutenbergr)
+
+text <- gutenberg_download(text_num)
+
+afinn <- get_sentiments("afinn")
+
+text_afinn <- text %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  count(word, sort = TRUE) %>%
+  inner_join(afinn, by = "word") %>% 
+  mutate(prob = n/sum(n)) %>%
+  arrange(desc(n)) 
+
+text_neg <- text_afinn %>%
+  filter(value < 0) %>%
+  arrange(desc(n))
+
+text_pos <- text_afinn %>%
+  filter(value > 0) %>%
+  arrange(desc(n))
+
+senti <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) * 10000
+
+senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
+
+senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
+
+senti <- abs(round(senti))
+
 
 # include a specific formula, for example:
 my_formula <- list(
-  x = quote(runif(1, -1, 1) * x_i^2 - sin(y_i^2)),
-  y = quote(runif(1, -1, 1) * y_i^2 - cos(x_i^2))
+  x = quote(runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)),
+  y = quote(runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2))
 )
 
 generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ...) {
@@ -64,8 +83,77 @@ generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ..
     plot <- generate_plot(df, file_name, polar, filetype, ...)
 }
 
-# call the main function to create five images with a polar coordinate system
 generate_img_fix(formula = my_formula, senti, polar = TRUE, filetype = "png", color = "black", background_color = "white")
+
+set.seed(senti)
+
+title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
+  select(word) %>%
+  print()
+
+```
+
+
+
+```{r}
+# wild <- gutenberg_download(1)
+# 
+# nrc <- get_sentiments("nrc")
+# afinn <- get_sentiments("afinn")
+# 
+# wild_afinn <- wild %>%
+#   unnest_tokens(output = word, input = text, token = "words") %>%
+#   count(word, sort = TRUE) %>%
+#   inner_join(afinn, by = "word") %>%
+#   arrange(desc(n))
+# 
+# senti <- sum(wild_afinn$n*wild_afinn$value)/sum(wild_afinn$n) * 10000
+# 
+# senti <- abs(round(senti))
+# 
+# wild_afinn <- wild %>%
+#   unnest_tokens(output = word, input = text, token = "words") %>%
+#   count(word, sort = TRUE) %>%
+#   inner_join(afinn, by = "word") %>%
+#   arrange(desc(n)) %>%
+#   print()
+# 
+# sum(wild_afinn$n*wild_afinn$value)/sum(wild_afinn$n)
+
+```
+
+```{r}
+# #generativeart
+# 
+# IMG_DIR <- "img_new/"
+# IMG_SUBDIR <- "everything/"
+# IMG_SUBDIR2 <- "handpicked/"
+# IMG_PATH <- paste0(IMG_DIR, IMG_SUBDIR)
+# 
+# LOGFILE_DIR <- "logfile/"
+# LOGFILE <- "logfile.csv"
+# LOGFILE_PATH <- paste0(LOGFILE_DIR, LOGFILE)
+# 
+# # create the directory structure
+# generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
+# 
+# # include a specific formula, for example:
+# my_formula <- list(
+#   x = quote(runif(1, -1, 1) * x_i^2 - sin(y_i^2)),
+#   y = quote(runif(1, -1, 1) * y_i^2 - cos(x_i^2))
+# )
+# 
+# generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ...) {
+#     set.seed(senti)
+#     file_name <- generate_filename(senti, filetype)
+#     logfile <- check_logfile_existence()
+#     logfile <- generate_logfile_entry(logfile, formula, senti, file_name)
+#     df <- generate_data(formula)
+#     plot <- generate_plot(df, file_name, polar, filetype, ...)
+# }
+# 
+# # call the main function to create five images with a polar coordinate system
+# generate_img_fix(formula = my_formula, senti, polar = TRUE, filetype = "png", color = "black", background_color = "white")
 
 ```
 
