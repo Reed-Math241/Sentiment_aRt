@@ -13,7 +13,47 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(generativeart)
 library(gutenbergr)
+library(tidytext)
 
+```
+
+```{r}
+# Scraping color info 
+library(rvest)
+library(httr)
+
+url <- "https://en.wikipedia.org/wiki/List_of_colors:_A%E2%80%93F"
+tables <- url %>%
+  read_html() %>%
+  html_nodes(css = "table")
+colors1 <- html_table(tables[[1]], fill = TRUE)
+
+url <- "https://en.wikipedia.org/wiki/List_of_colors:_G%E2%80%93M"
+tables <- url %>%
+  read_html() %>%
+  html_nodes(css = "table")
+colors2 <- html_table(tables[[1]], fill = TRUE)
+
+url <- "https://en.wikipedia.org/wiki/List_of_colors:_N%E2%80%93Z"
+tables <- url %>%
+  read_html() %>%
+  html_nodes(css = "table")
+colors3 <- html_table(tables[[1]], fill = TRUE)
+
+colors_scrape <- rbind(colors1, colors2, colors3) %>%
+  mutate(Name = str_to_lower(Name, locale = "en"),
+         Name = str_replace(Name, " \\s*\\([^\\)]+\\)", "")) %>%
+  distinct(Name, .keep_all = TRUE)
+
+colors <- colors_scrape %>%
+  select(Name)
+
+colors_all <- colors %>%
+  summarise(Name = paste0(Name, collapse = "|")) %>%
+  as.character(expression())
+
+colors_all <- paste0("^", colors_all)
+colors_all <- paste0(colors_all, "$")
 ```
 
 
@@ -32,15 +72,17 @@ generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
 
 # give me a gutenburg text number 
 
-text_num <- 215
+text_num <- 5
 
 # gen art function from gutenberg
 
 library(tidyverse)
 library(generativeart)
 library(gutenbergr)
+library(tidytext)
 
-text <- gutenberg_download(text_num)
+text <- gutenberg_download(text_num) %>%
+  mutate(text = str_to_lower(text, locale = "en"))
 
 afinn <- get_sentiments("afinn")
 
@@ -68,12 +110,45 @@ senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
 senti <- abs(round(senti))
 
 
-# include a specific formula, for example:
+# For getting colors from text
+# Note -- need to figure out how to get tan and red to play nicely and only show up when it's the actual color
+
+text_grammed <- text %>%
+  unnest_tokens(output = word, input = text,
+  token = "ngrams", n = 3)
+
+colors_parsed <- text_grammed %>%
+  mutate(Name = str_extract(word, pattern = colors_all)) %>%
+  drop_na() %>%
+  select(Name)
+
+colors_parsed <- colors_parsed %>%
+  group_by(Name) %>%
+  count() %>%
+  arrange(desc(n))
+  
+colors_final <- left_join(colors_parsed, colors_scrape, by = "Name") %>%
+  select(Name, `Hex(RGB)`, n) %>%
+  rename(Hex = `Hex(RGB)`)
+
+color_background <- colors_final[2, 2]
+color_background <- color_background %>%
+  as.character(expression())
+
+color_main <- colors_final[1, 2]
+color_main <- color_main %>%
+  as.character(expression())
+
+# generativeart_color <- colors_final
+
+# Formula:
 my_formula <- list(
   x = quote(runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)),
   y = quote(runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2))
 )
 
+
+# Generating image
 generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ...) {
     set.seed(senti)
     file_name <- generate_filename(senti, filetype)
@@ -83,16 +158,14 @@ generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ..
     plot <- generate_plot(df, file_name, polar, filetype, ...)
 }
 
-generate_img_fix(formula = my_formula, senti, polar = TRUE, filetype = "png", color = "black", background_color = "white")
+generate_img_fix(formula = my_formula, senti, polar = TRUE, filetype = "png", color = color_main, background_color = color_background)
 
 set.seed(senti)
 
 title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
   select(word) %>%
   print()
-
 ```
-
 
 
 ```{r}
