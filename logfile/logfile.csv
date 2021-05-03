@@ -1,0 +1,3 @@
+file_name	seed	formula_x	formula_y
+NA	NA	NA	NA
+2021-04-26-21-48_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
