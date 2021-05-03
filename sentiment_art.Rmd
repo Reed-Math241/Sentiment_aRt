@@ -18,7 +18,7 @@ library(tidytext)
 ```
 
 ```{r}
-# Scraping color info 
+# Color scraping and setup
 library(rvest)
 library(httr)
 
@@ -56,23 +56,12 @@ colors_all <- paste0("^", colors_all)
 colors_all <- paste0(colors_all, "$")
 ```
 
-
 ```{r}
-IMG_DIR <- "img_new/"
-IMG_SUBDIR <- "everything/"
-IMG_SUBDIR2 <- "handpicked/"
-IMG_PATH <- paste0(IMG_DIR, IMG_SUBDIR)
+# Text set up
 
-LOGFILE_DIR <- "logfile/"
-LOGFILE <- "logfile.csv"
-LOGFILE_PATH <- paste0(LOGFILE_DIR, LOGFILE)
+# give me a gutenburg text number -- this is because the function kept breaking
 
-# directory
-generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
-
-# give me a gutenburg text number 
-
-text_num <- 5
+text_num <- 215
 
 # gen art function from gutenberg
 
@@ -108,9 +97,10 @@ senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
 senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
 
 senti <- abs(round(senti))
+```
 
-
-# For getting colors from text
+```{r}
+# Colors from text
 # Note -- need to figure out how to get tan and red to play nicely and only show up when it's the actual color
 
 text_grammed <- text %>%
@@ -122,15 +112,35 @@ colors_parsed <- text_grammed %>%
   drop_na() %>%
   select(Name)
 
-colors_parsed <- colors_parsed %>%
+colors_counted <- colors_parsed %>%
   group_by(Name) %>%
   count() %>%
+  ungroup() %>%
+  mutate(prob = n/sum(n)) %>%
   arrange(desc(n))
   
-colors_final <- left_join(colors_parsed, colors_scrape, by = "Name") %>%
-  select(Name, `Hex(RGB)`, n) %>%
-  rename(Hex = `Hex(RGB)`)
+colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
+  select(Name, `Hex(RGB)`, n, prob) %>%
+  rename(Hex = `Hex(RGB)`) 
 
+```
+
+```{r}
+# Generative Art
+
+IMG_DIR <- "img_new/"
+IMG_SUBDIR <- "everything/"
+IMG_SUBDIR2 <- "handpicked/"
+IMG_PATH <- paste0(IMG_DIR, IMG_SUBDIR)
+
+LOGFILE_DIR <- "logfile/"
+LOGFILE <- "logfile.csv"
+LOGFILE_PATH <- paste0(LOGFILE_DIR, LOGFILE)
+
+# directory
+generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
+
+# Setting colors
 color_background <- colors_final[2, 2]
 color_background <- color_background %>%
   as.character(expression())
@@ -139,14 +149,11 @@ color_main <- colors_final[1, 2]
 color_main <- color_main %>%
   as.character(expression())
 
-# generativeart_color <- colors_final
-
 # Formula:
 my_formula <- list(
   x = quote(runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)),
   y = quote(runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2))
 )
-
 
 # Generating image
 generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ...) {
@@ -167,66 +174,112 @@ title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
   print()
 ```
 
-
 ```{r}
-# wild <- gutenberg_download(1)
-# 
-# nrc <- get_sentiments("nrc")
-# afinn <- get_sentiments("afinn")
-# 
-# wild_afinn <- wild %>%
-#   unnest_tokens(output = word, input = text, token = "words") %>%
-#   count(word, sort = TRUE) %>%
-#   inner_join(afinn, by = "word") %>%
-#   arrange(desc(n))
-# 
-# senti <- sum(wild_afinn$n*wild_afinn$value)/sum(wild_afinn$n) * 10000
-# 
-# senti <- abs(round(senti))
-# 
-# wild_afinn <- wild %>%
-#   unnest_tokens(output = word, input = text, token = "words") %>%
-#   count(word, sort = TRUE) %>%
-#   inner_join(afinn, by = "word") %>%
-#   arrange(desc(n)) %>%
-#   print()
-# 
-# sum(wild_afinn$n*wild_afinn$value)/sum(wild_afinn$n)
 
+# Not my code go to: https://jean.fan/art-with-code/portfolio/20180720_mondrian/
+
+composition <- function(
+  width=100, height=100,
+  minDistApart=round(min(width, height)/20),
+  fixedLines=FALSE, seed=NA) {
+
+  if(!is.na(seed)) {
+    set.seed(seed)
+  }
+
+  # set colors; red, yellow, blue, black, white
+  colors <- c(colors_final$Hex)
+  # more likely to sample white, least likely to sample black
+  p <- c(colors_final$prob)
+
+  # random number of horizontal and vertical lines
+  # more likely to sample lower number
+  nLinesX <- sample(2:floor(width/minDistApart), 1, p=1/(2:floor(width/minDistApart)))
+  # make sure lines are not too close together
+  x <- sample(1:floor(width/minDistApart), nLinesX)*minDistApart
+  x <- sort(x)
+  nLinesY <- sample(2:floor(height/minDistApart), 1, p=1/(2:floor(height/minDistApart)))
+  y <- sample(1:floor(height/minDistApart), nLinesY)*minDistApart
+  y <- sort(y)
+
+  # set line width
+  if(fixedLines) {
+    lineWidthX <- rep(round(min(width, height)/20), nLinesX)
+    lineWidthY <- rep(round(min(width, height)/20), nLinesY)
+  } else {
+    lineWidthX <- sample(round(min(width, height)/20):round(min(width, height)/5), nLinesX, replace=TRUE)
+    lineWidthY <- sample(round(min(width, height)/20):round(min(width, height)/5), nLinesY, replace=TRUE)
+  }
+
+  # randomly decide whether to go to edge
+  if(sample(c(TRUE, FALSE), 1)) {
+    x <- c(0, x)
+    lineWidthX <- c(0, lineWidthX)
+  }
+  if(sample(c(TRUE, FALSE), 1)) {
+    x <- c(x, width)
+    lineWidthX <- c(lineWidthX, 0)
+  }
+  if(sample(c(TRUE, FALSE), 1)) {
+    y <- c(0, y)
+    lineWidthY <- c(0, lineWidthY)
+  }
+  if(sample(c(TRUE, FALSE), 1)) {
+    y <- c(y, height)
+    lineWidthY <- c(lineWidthY, 0)
+  }
+
+  # plot
+  plot(NULL, xlim=c(0, width), ylim=c(0, height), axes=FALSE, frame.plot=TRUE, xlab='', ylab='', xaxs = "i", yaxs = "i")
+  # add lines
+  abline(v=x, lwd=lineWidthX)
+  abline(h=y, lwd=lineWidthY)
+  # add colored polygons
+  for(i in 1:(length(y))) {
+    for(j in 1:(length(x))) {
+      randColor <- sample(colors, 1, prob=p) # random color
+      k = sample(y[-i], 1)
+      l = sample(x[-j], 1)
+      polygon(c(x[j], l, l, x[j]), c(y[i], y[i], k, k), col=randColor, border='black', lwd = round(min(width, height)/20))
+    }
+  }
+
+}
+
+# Runner
+par(mfrow=c(1,1), mar=rep(1,4))
+composition(fixedLines=TRUE, seed=NA)
 ```
 
 ```{r}
-# #generativeart
-# 
-# IMG_DIR <- "img_new/"
-# IMG_SUBDIR <- "everything/"
-# IMG_SUBDIR2 <- "handpicked/"
-# IMG_PATH <- paste0(IMG_DIR, IMG_SUBDIR)
-# 
-# LOGFILE_DIR <- "logfile/"
-# LOGFILE <- "logfile.csv"
-# LOGFILE_PATH <- paste0(LOGFILE_DIR, LOGFILE)
-# 
-# # create the directory structure
-# generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
-# 
-# # include a specific formula, for example:
-# my_formula <- list(
-#   x = quote(runif(1, -1, 1) * x_i^2 - sin(y_i^2)),
-#   y = quote(runif(1, -1, 1) * y_i^2 - cos(x_i^2))
-# )
-# 
-# generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ...) {
-#     set.seed(senti)
-#     file_name <- generate_filename(senti, filetype)
-#     logfile <- check_logfile_existence()
-#     logfile <- generate_logfile_entry(logfile, formula, senti, file_name)
-#     df <- generate_data(formula)
-#     plot <- generate_plot(df, file_name, polar, filetype, ...)
-# }
-# 
-# # call the main function to create five images with a polar coordinate system
-# generate_img_fix(formula = my_formula, senti, polar = TRUE, filetype = "png", color = "black", background_color = "white")
+library(grid) 
 
+## Number of frames
+N <- 500
+## Number of colors
+k <- 100
+## N/k is number of times color palette will repeat
+
+## Some sample colors
+colors <- rep(rainbow(k, s=0.8), N/k)
+#colors <- rep(colorRampPalette(c('orange','yellow', 'darkorange'))(k), N/k)
+#colors <- rep(colorRampPalette(c('white', 'pink', 'white', 'lightblue', 'white'))(k), N/k)
+#colors <- colorRampPalette(c('beige', 'forestgreen', 'darkgreen'))(N)
+
+## Draw background
+dev.new()
+pushViewport(viewport(width=1, height=1, angle=0))
+grid.rect(gp = gpar(col = NA, fill = colors[1]))
+
+## Scale viewport and rotate
+for(i in 2:N){
+  ## Optionally try increasing the angle or increasing the scale rate
+  pushViewport(viewport(width=0.99, height=0.99, angle=1))
+  # Optionally try: grid.circle(), grid.roundedrect()
+  grid.rect(
+    # Optionally shift: x = 0, y = 1,
+    gp = gpar(col = NA, fill = colors[i])
+  )
+}
 ```
 
