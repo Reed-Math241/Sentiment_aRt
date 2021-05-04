@@ -49,6 +49,9 @@ colors <- colors_scrape %>%
   select(Name) %>%
   mutate(Name = paste0("^", Name, "$"))
 
+# colors$Name <- paste0("^", colors$Name)
+# colors$Name <- paste0(colors$Name, "$")
+
 colors_all <- colors %>%
   summarise(Name = paste0(Name, collapse = "|")) %>%
   as.character(expression())
@@ -89,6 +92,7 @@ text_pos <- text_afinn %>%
   filter(value > 0) %>%
   arrange(desc(n))
 
+# R's seed will only accept values between 1-10000, that's the purpose of *10000
 senti <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) * 10000
 
 senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
@@ -96,6 +100,8 @@ senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
 senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
 
 senti <- abs(round(senti))
+
+set.seed(senti)
 ```
 
 ```{r}
@@ -251,6 +257,8 @@ composition(fixedLines=TRUE, seed=NA)
 ```
 
 ```{r}
+# https://jean.fan/art-with-code/portfolio/20180721_tunnel/
+
 library(grid) 
 
 ## Number of frames
@@ -281,4 +289,94 @@ for(i in 2:N){
   )
 }
 ```
+
+```{r}
+# trying to make something that works vaguely like: https://datatricks.co.uk/the-hidden-art-in-pi
+
+# Unsorted affinity, so the book from start to finish
+text_afinn_unsort <- text %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  inner_join(afinn, by = "word") 
+
+text_unsort_simp <- text_afinn_unsort %>%
+  mutate(value = case_when(value == 1 ~ 1,
+                           value == 2 ~ 2,
+                           value == -1 ~ -1,
+                           value == -2 ~ -2,
+                           value %in% 3:5 ~ 3,
+                           value %in% -3:-5 ~ -3))
+
+book_coords <- text_afinn_unsort %>%
+  select(value) %>%
+    mutate(sign = sign(value),
+         x_coord = cumsum(sign),
+         y_coord = cumsum(value))
+
+book_coords_7deg <- text_afinn_unsort %>%
+  mutate(x_coord = cumsum(case_when(value == 1 ~ .78,
+                             value == 2 ~ .97,
+                             value == 3 ~ .43,
+                             value == -1 ~ -.78,
+                             value == -2 ~ -.97,
+                             value == -3 ~ -.43)),
+         y_coord = cumsum(case_when(value == 1 ~ .62,
+                             value == 2 ~ -.22,
+                             value == 3 ~ -.9,
+                             value == -1 ~ .62,
+                             value == -2 ~ -.22,
+                             value == -3 ~ -.9)))
+
+ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord)) +
+  geom_point()
+
+
+
+# Using proportions of words -- randomly sampled
+feather_sample1 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
+  select(value) %>%
+  mutate(sign = sign(value),
+         x_coord = cumsum(sign),
+         y_coord = cumsum(value))
+
+feather_sample2 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
+  select(value) %>%
+  mutate(sign = sign(value),
+         x_coord = cumsum(sign),
+         y_coord = cumsum(value))
+
+feather_sample3 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
+  select(value) %>%
+  mutate(sign = sign(value),
+         x_coord = cumsum(sign),
+         y_coord = cumsum(value))
+
+feather_sample4 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
+  select(value) %>%
+  mutate(sign = sign(value),
+         x_coord = cumsum(sign),
+         y_coord = cumsum(value))
+
+feather_sample5 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
+  select(value) %>%
+  mutate(sign = sign(value),
+         x_coord = cumsum(sign),
+         y_coord = cumsum(value))
+
+ggplot(data = feather_sample1, mapping = aes(x = x_coord, y = y_coord)) +
+  geom_line() +
+  geom_line(data = feather_sample2) +
+  geom_line(data = feather_sample3) +
+  geom_line(data = feather_sample4) +
+  geom_line(data = feather_sample5)
+
+feathers <- rbind(feather_sample1, feather_sample2, feather_sample3, feather_sample4, feather_sample5)
+
+ggplot(feathers, aes(x = x_coord, y = y_coord)) +
+  geom_line() +
+  xlim(-100, 10) +
+  ylim(-100, 10)
+
+
+```
+
 
