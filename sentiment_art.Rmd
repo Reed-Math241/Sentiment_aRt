@@ -309,13 +309,49 @@ text_unsort_simp <- text_afinn_unsort %>%
                            value %in% 3:5 ~ 3,
                            value %in% -3:-5 ~ -3))
 
-book_coords <- text_afinn_unsort %>%
+book_coords <- text_unsort_simp %>%
   select(value) %>%
     mutate(sign = sign(value),
          x_coord = cumsum(sign),
          y_coord = cumsum(value))
 
-book_coords_7deg <- text_afinn_unsort %>%
+book_coords_7deg <- text_unsort_simp %>%
+  mutate(x_coord = cumsum(case_when(value == 1 ~ .78,
+                             value == 2 ~ .97,
+                             value == 3 ~ .43,
+                             value == -1 ~ -.78,
+                             value == -2 ~ -.97,
+                             value == -3 ~ -.43)),
+         y_coord = cumsum(case_when(value == 1 ~ .62,
+                             value == 2 ~ -.22,
+                             value == 3 ~ -.9,
+                             value == -1 ~ .62,
+                             value == -2 ~ -.22,
+                             value == -3 ~ -.9)),
+         color_val = row_number())
+
+ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord, color = color_val)) +
+  geom_point(size = .1) +
+  scale_color_continuous(low = "dark red", high = "white") +
+  theme(line = element_blank(),
+        text = element_blank(),
+        title = element_blank(),
+        panel.background = element_rect(fill = "black",
+                                colour = "black",
+                                size = 0.5, linetype = "solid"))
+
+
+
+# Using proportions of words -- randomly sampled
+text_afinn_simp <- text_afinn %>%
+  mutate(value = case_when(value == 1 ~ 1,
+                           value == 2 ~ 2,
+                           value == -1 ~ -1,
+                           value == -2 ~ -2,
+                           value %in% 3:5 ~ 3,
+                           value %in% -3:-5 ~ -3))
+
+book_coords_7deg_prop <- text_afinn_simp %>%
   mutate(x_coord = cumsum(case_when(value == 1 ~ .78,
                              value == 2 ~ .97,
                              value == 3 ~ .43,
@@ -329,53 +365,38 @@ book_coords_7deg <- text_afinn_unsort %>%
                              value == -2 ~ -.22,
                              value == -3 ~ -.9)))
 
-ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord)) +
-  geom_point()
+feather_sample1 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
+  mutate(color_val = row_number())
 
+feather_sample2 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
+  mutate(color_val = row_number())
 
+feather_sample3 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
+  mutate(color_val = row_number())
 
-# Using proportions of words -- randomly sampled
-feather_sample1 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
-  select(value) %>%
-  mutate(sign = sign(value),
-         x_coord = cumsum(sign),
-         y_coord = cumsum(value))
+feather_sample4 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
+  mutate(color_val = row_number())
 
-feather_sample2 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
-  select(value) %>%
-  mutate(sign = sign(value),
-         x_coord = cumsum(sign),
-         y_coord = cumsum(value))
+feather_sample5 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
+  mutate(color_val = row_number())
 
-feather_sample3 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
-  select(value) %>%
-  mutate(sign = sign(value),
-         x_coord = cumsum(sign),
-         y_coord = cumsum(value))
-
-feather_sample4 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
-  select(value) %>%
-  mutate(sign = sign(value),
-         x_coord = cumsum(sign),
-         y_coord = cumsum(value))
-
-feather_sample5 <- sample_n(text_afinn, 10000, replace = TRUE, weight = prob) %>%
-  select(value) %>%
-  mutate(sign = sign(value),
-         x_coord = cumsum(sign),
-         y_coord = cumsum(value))
-
-ggplot(data = feather_sample1, mapping = aes(x = x_coord, y = y_coord)) +
-  geom_line() +
-  geom_line(data = feather_sample2) +
-  geom_line(data = feather_sample3) +
-  geom_line(data = feather_sample4) +
-  geom_line(data = feather_sample5)
+ggplot(data = feather_sample1, mapping = aes(x = x_coord, y = y_coord, color = "red")) +
+  geom_point() +
+  geom_point(data = feather_sample2) +
+  geom_point(data = feather_sample3) +
+  geom_point(data = feather_sample4) +
+  geom_point(data = feather_sample5) +
+  theme(line = element_blank(),
+        text = element_blank(),
+        title = element_blank(),
+        panel.background = element_rect(fill = "black",
+                                colour = "black",
+                                size = 0.5, linetype = "solid"))
 
 feathers <- rbind(feather_sample1, feather_sample2, feather_sample3, feather_sample4, feather_sample5)
 
-ggplot(feathers, aes(x = x_coord, y = y_coord)) +
-  geom_line() +
+ggplot(feathers, aes(x = x_coord, y = y_coord, color = "red")) +
+  geom_point() +
   xlim(-100, 10) +
   ylim(-100, 10)
 
