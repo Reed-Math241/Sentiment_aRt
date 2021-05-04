@@ -1,0 +1,231 @@
+---
+title: "raster_rayshader"
+author: "Amrita"
+date: "5/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+
+#all libraries
+library(rayshader)
+library(raster)
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(ambient)
+library(stringr)
+library(tidytext)
+library(rvest)
+library(httr)
+library(dplyr)
+library(gutenbergr)
+
+#cellular automata
+library(tidyverse)
+library(Rcpp)
+library(colourlovers)
+library(reshape2)
+library(cowplot)
+
+```
+
+```{r}
+# Maxwell's color scraping and setup
+
+url <- "https://en.wikipedia.org/wiki/List_of_colors:_A%E2%80%93F"
+tables <- url %>%
+  read_html() %>%
+  html_nodes(css = "table")
+colors1 <- html_table(tables[[1]], fill = TRUE)
+
+url <- "https://en.wikipedia.org/wiki/List_of_colors:_G%E2%80%93M"
+tables <- url %>%
+  read_html() %>%
+  html_nodes(css = "table")
+colors2 <- html_table(tables[[1]], fill = TRUE)
+
+url <- "https://en.wikipedia.org/wiki/List_of_colors:_N%E2%80%93Z"
+tables <- url %>%
+  read_html() %>%
+  html_nodes(css = "table")
+colors3 <- html_table(tables[[1]], fill = TRUE)
+
+colors_scrape <- rbind(colors1, colors2, colors3) %>%
+  mutate(Name = str_to_lower(Name, locale = "en"),
+         Name = str_replace(Name, " \\s*\\([^\\)]+\\)", "")) %>%
+  distinct(Name, .keep_all = TRUE)
+
+colors <- colors_scrape %>%
+  dplyr::select(Name) 
+
+colors_all <- colors %>%
+  summarise(Name = paste0(Name, collapse = "|")) %>%
+  as.character(expression())
+
+colors_all <- paste0("\\b(", colors_all, ")\\b")
+
+```
+
+```{r, echo = FALSE}
+#viewing text options 
+works <- gutenberg_works()
+
+```
+
+```{r}
+#loading and analyzing text sentiments
+text_num <- 11 #alice's adventure in wonderland
+
+text <- gutenberg_download(text_num) %>%
+  mutate(text = str_to_lower(text, locale = "en"))
+
+afinn <- get_sentiments("afinn")
+data("stop_words")
+
+text_stopped <- text %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  count(word, sort = TRUE) %>%
+  anti_join(stop_words, by = "word") 
+
+text_afinn <- text_stopped %>%
+  inner_join(afinn, by = "word") %>% 
+  mutate(prop = n/sum(n)) %>%
+  arrange(desc(n))
+
+text_neg <- text_afinn %>%
+  filter(value < 0) %>%
+  arrange(desc(n))
+
+text_pos <- text_afinn %>%
+  filter(value > 0) %>%
+  arrange(desc(n))
+
+senti <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) * 10000
+
+senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
+
+senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
+
+senti <- abs(round(senti))
+
+```
+
+```{r}
+#creating color correespondence 
+text_grammed <- text %>%
+  unnest_tokens(output = word, input = text,
+  token = "ngrams", n = 3)
+
+colors_parsed <- text_grammed %>%
+  mutate(Name = str_extract(word, pattern = colors_all)) %>%
+  drop_na() %>%
+  dplyr::select(Name)
+
+colors_counted <- colors_parsed %>%
+  group_by(Name) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(prop = n/sum(n)) %>%
+  arrange(desc(n))
+
+colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
+  dplyr::select(Name, `Hex(RGB)`, n, prop) %>%
+  rename(Hex = `Hex(RGB)`)
+
+```
+
+```{r}
+#C++ fxns from aschinchon github
+
+sourceCpp('aschinchon_cellularautomata.cpp')
+
+```
+
+```{r}
+#cyclic cellular automata fxns
+
+initial_grid <- function(s, w, h){
+  matrix(sample(x = seq_len(s)-1,
+               size = w *h,
+               replace = TRUE),
+         nrow = h,
+         ncol = w)}
+
+convolution_indexes <- function(r, n){
+  crossing(x = -r:r, y = -r:r) %>% 
+    mutate(M = ((x != 0) | (y != 0)) * 1 ,
+           N = (abs(x) + abs(y) <= r) * M,
+           Mr = ((abs(x) == r) | (abs(y) == r)) * M,
+           Nr = (abs(x) + abs(y) == r) * M,
+           Cr = ((x == 0) | (y == 0)) * M,
+           S1 = (((x > 0) & (y > 0))|((x < 0) & (y < 0))) * 1,
+           Bl = (abs(x) == abs(y)) * M,
+           D1 = (abs(x) > abs(y)) * M,
+           D2 = ((abs(x) == abs(y)) | abs(x) == r) * M,
+           C2 = M - N,
+           Z = ((abs(y) == r) | (x == y)) * M,
+           t = ((y == r) | (x == 0)) * M,
+           U = ((abs(x) == r) | (y == -r)) * M,
+           H = (abs(x) == r | y == 0) * M,
+           TM = ((abs(x) == abs(y)) | abs(x) == r | abs(y) == r) * M,
+           S2 = ((y==0) | ((x == r) & (y > 0)) |((x == -r) & (y < 0))) * M,
+           M2 = ((abs(x) == r) | (abs(x) == abs(y) & y > 0)) * M) %>% 
+    dplyr::select(x, y, matches(n)) %>% 
+    filter_at(3, all_vars(. > 0)) %>% 
+    dplyr::select(x,y)
+}
+
+```
+
+```{r}
+#create dataframe
+
+range <- 5 #depth of the neighborhood 
+thresold <- 29 #cell limit
+states <- 5 #maximum number of states allowed (algorithm M) 
+neighborhood <- "M" #pattern of neighboring cells
+iter <- 200 #number of iterations
+
+width  <- 1500
+height <- 1500
+
+X <- initial_grid(s = states,
+                  w = width,
+                  h = height)
+
+L <- convolution_indexes(r = range, n = neighborhood)
+  
+for (i in 1:iter){
+    X <- iterate_cyclic(X, L, states, thresold)  
+}
+
+df <- melt(X)
+colnames(df) <- c("x","y","v") # to name columns
+  
+```
+
+```{r}
+#plot cells
+
+colors <- colors_final$Hex
+
+ggplot(data = df, aes(x = x, y = y, fill = v)) + 
+  geom_raster(interpolate = TRUE) +
+  coord_equal() +
+  scale_fill_gradientn(colours = colors) +
+  scale_y_continuous(expand = c(0,0)) + 
+  scale_x_continuous(expand = c(0,0)) +
+  theme_nothing() 
+
+
+```
+
+
+
+
