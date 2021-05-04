@@ -46,14 +46,13 @@ colors_scrape <- rbind(colors1, colors2, colors3) %>%
   distinct(Name, .keep_all = TRUE)
 
 colors <- colors_scrape %>%
-  select(Name)
+  select(Name) %>%
+  mutate(Name = paste0("^", Name, "$"))
 
 colors_all <- colors %>%
   summarise(Name = paste0(Name, collapse = "|")) %>%
   as.character(expression())
 
-colors_all <- paste0("^", colors_all)
-colors_all <- paste0(colors_all, "$")
 ```
 
 ```{r}
