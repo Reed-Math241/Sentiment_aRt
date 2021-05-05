@@ -25,6 +25,8 @@ library(rvest)
 library(httr)
 library(dplyr)
 library(gutenbergr)
+library(rgl)
+library(rgdal)
 
 #cellular automata
 library(tidyverse)
@@ -148,7 +150,7 @@ sourceCpp('aschinchon_cellularautomata.cpp')
 ```
 
 ```{r}
-#cyclic cellular automata fxns
+#cyclic cellular automata fxns from aschinchon 
 
 initial_grid <- function(s, w, h){
   matrix(sample(x = seq_len(s)-1,
@@ -186,14 +188,14 @@ convolution_indexes <- function(r, n){
 ```{r}
 #create dataframe
 
-range <- 5 #depth of the neighborhood 
-thresold <- 29 #cell limit
-states <- 5 #maximum number of states allowed (algorithm M) 
-neighborhood <- "M" #pattern of neighboring cells
-iter <- 200 #number of iterations
+range <- 3 #depth of the neighborhood 
+thresold <- 3 #cell limit
+states <- 10 #maximum number of states allowed (algorithm M) 
+neighborhood <- "N" #pattern of neighboring cells
+iter <- 171 #number of iterations
 
-width  <- 1500
-height <- 1500
+width  <- 200
+height <- 200
 
 X <- initial_grid(s = states,
                   w = width,
@@ -215,14 +217,22 @@ colnames(df) <- c("x","y","v") # to name columns
 
 colors <- colors_final$Hex
 
-ggplot(data = df, aes(x = x, y = y, fill = v)) + 
+ggobj = ggplot(data = df, aes(x = x, y = y, fill = v)) + 
   geom_raster(interpolate = TRUE) +
   coord_equal() +
   scale_fill_gradientn(colours = colors) +
   scale_y_continuous(expand = c(0,0)) + 
   scale_x_continuous(expand = c(0,0)) +
   theme_nothing() 
+ggobj
 
+```
+
+```{r}
+#rayshader
+
+plot_gg(ggobj, preview = TRUE)
+render_snapshot()
 
 ```
 
