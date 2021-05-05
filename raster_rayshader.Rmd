@@ -27,6 +27,8 @@ library(dplyr)
 library(gutenbergr)
 library(rgl)
 library(rgdal)
+library("plot3Drgl")
+library(webshot2)
 
 #cellular automata
 library(tidyverse)
@@ -194,8 +196,8 @@ states <- 10 #maximum number of states allowed (algorithm M)
 neighborhood <- "N" #pattern of neighboring cells
 iter <- 171 #number of iterations
 
-width  <- 200
-height <- 200
+width  <- 150
+height <- 150
 
 X <- initial_grid(s = states,
                   w = width,
@@ -231,7 +233,9 @@ ggobj
 ```{r}
 #rayshader
 
-plot_gg(ggobj, preview = TRUE)
+plot_gg(ggobj)
+Sys.sleep(0.2)
+render_camera()
 render_snapshot()
 
 ```
