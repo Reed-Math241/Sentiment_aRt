@@ -1,3 +1,15 @@
 file_name	seed	formula_x	formula_y
 NA	NA	NA	NA
 2021-04-26-21-48_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-03-15-37_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-03-15-38_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-03-15-50_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-03-17-38_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-03-17-44_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-03-17-47_seed_1201.png	1201	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-04-11-52_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-04-16-47_seed_5081.png	5081	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-04-16-50_seed_4650.png	4650	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-05-13-05_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-05-15-31_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)
+2021-05-05-15-56_seed_3222.png	3222	runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)	runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2)

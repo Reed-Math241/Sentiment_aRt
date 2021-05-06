@@ -19,6 +19,7 @@ library(tidytext)
 
 ```{r}
 # Color scraping and setup
+library(tidyverse)
 library(rvest)
 library(httr)
 
@@ -63,10 +64,10 @@ colors_all <- paste0("\\b(", colors_all, ")\\b")
 
 text_num <- 215
 
+# pretty ones: 7462
+
 # gen art function from gutenberg
 
-library(tidyverse)
-library(generativeart)
 library(gutenbergr)
 library(tidytext)
 
@@ -130,6 +131,7 @@ colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
 
 ```{r}
 # Generative Art
+library(generativeart)
 
 IMG_DIR <- "img_new/"
 IMG_SUBDIR <- "everything/"
@@ -191,8 +193,8 @@ composition <- function(
   minDistApart=round(min(width, height)/20),
   fixedLines=FALSE, seed=NA) {
 
-  if(!is.na(seed)) {
-    set.seed(seed)
+  if(!is.na(senti)) {
+    set.seed(senti)
   }
 
   # set colors; red, yellow, blue, black, white
@@ -332,7 +334,7 @@ book_coords_7deg <- text_unsort_simp %>%
 
 ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord, color = color_val)) +
   geom_point(size = .1) +
-  scale_color_continuous(low = "dark red", high = "white") +
+  scale_color_continuous(high = "dark red", low = "white") +
   theme(line = element_blank(),
         text = element_blank(),
         title = element_blank(),
@@ -340,8 +342,10 @@ ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord, color = 
                                 colour = "black",
                                 size = 0.5, linetype = "solid"))
 
+```
 
 
+```{r}
 # Using proportions of words -- randomly sampled
 text_afinn_simp <- text_afinn %>%
   mutate(value = case_when(value == 1 ~ 1,
@@ -366,26 +370,92 @@ book_coords_7deg_prop <- text_afinn_simp %>%
                              value == -3 ~ -.9)))
 
 feather_sample1 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
-  mutate(color_val = row_number())
+  mutate(color_val = row_number()) %>%
+  select(word, value, color_val) %>%
+  mutate(x_coord = cumsum(case_when(value == 1 ~ .78,
+                             value == 2 ~ .97,
+                             value == 3 ~ .43,
+                             value == -1 ~ -.78,
+                             value == -2 ~ -.97,
+                             value == -3 ~ -.43)),
+         y_coord = cumsum(case_when(value == 1 ~ .62,
+                             value == 2 ~ -.22,
+                             value == 3 ~ -.9,
+                             value == -1 ~ .62,
+                             value == -2 ~ -.22,
+                             value == -3 ~ -.9)))
+
 
 feather_sample2 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
-  mutate(color_val = row_number())
+  mutate(color_val = row_number()) %>%
+  select(word, value, color_val) %>%
+  mutate(x_coord = cumsum(case_when(value == 1 ~ .78,
+                             value == 2 ~ .97,
+                             value == 3 ~ .43,
+                             value == -1 ~ -.78,
+                             value == -2 ~ -.97,
+                             value == -3 ~ -.43)),
+         y_coord = cumsum(case_when(value == 1 ~ .62,
+                             value == 2 ~ -.22,
+                             value == 3 ~ -.9,
+                             value == -1 ~ .62,
+                             value == -2 ~ -.22,
+                             value == -3 ~ -.9)))
 
 feather_sample3 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
-  mutate(color_val = row_number())
+  mutate(color_val = row_number()) %>%
+  select(word, value, color_val) %>%
+  mutate(x_coord = cumsum(case_when(value == 1 ~ .78,
+                             value == 2 ~ .97,
+                             value == 3 ~ .43,
+                             value == -1 ~ -.78,
+                             value == -2 ~ -.97,
+                             value == -3 ~ -.43)),
+         y_coord = cumsum(case_when(value == 1 ~ .62,
+                             value == 2 ~ -.22,
+                             value == 3 ~ -.9,
+                             value == -1 ~ .62,
+                             value == -2 ~ -.22,
+                             value == -3 ~ -.9)))
 
 feather_sample4 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
-  mutate(color_val = row_number())
+  mutate(color_val = row_number()) %>%
+  select(word, value, color_val) %>%
+  mutate(x_coord = cumsum(case_when(value == 1 ~ .78,
+                             value == 2 ~ .97,
+                             value == 3 ~ .43,
+                             value == -1 ~ -.78,
+                             value == -2 ~ -.97,
+                             value == -3 ~ -.43)),
+         y_coord = cumsum(case_when(value == 1 ~ .62,
+                             value == 2 ~ -.22,
+                             value == 3 ~ -.9,
+                             value == -1 ~ .62,
+                             value == -2 ~ -.22,
+                             value == -3 ~ -.9)))
 
 feather_sample5 <- sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
-  mutate(color_val = row_number())
+  mutate(color_val = row_number()) %>%
+  select(word, value, color_val) %>%
+  mutate(x_coord = cumsum(case_when(value == 1 ~ .78,
+                             value == 2 ~ .97,
+                             value == 3 ~ .43,
+                             value == -1 ~ -.78,
+                             value == -2 ~ -.97,
+                             value == -3 ~ -.43)),
+         y_coord = cumsum(case_when(value == 1 ~ .62,
+                             value == 2 ~ -.22,
+                             value == 3 ~ -.9,
+                             value == -1 ~ .62,
+                             value == -2 ~ -.22,
+                             value == -3 ~ -.9)))
 
 ggplot(data = feather_sample1, mapping = aes(x = x_coord, y = y_coord, color = "red")) +
-  geom_point() +
-  geom_point(data = feather_sample2) +
-  geom_point(data = feather_sample3) +
-  geom_point(data = feather_sample4) +
-  geom_point(data = feather_sample5) +
+  geom_line() +
+  geom_line(data = feather_sample2) +
+  geom_line(data = feather_sample3) +
+  geom_line(data = feather_sample4) +
+  geom_line(data = feather_sample5) +
   theme(line = element_blank(),
         text = element_blank(),
         title = element_blank(),
@@ -395,12 +465,55 @@ ggplot(data = feather_sample1, mapping = aes(x = x_coord, y = y_coord, color = "
 
 feathers <- rbind(feather_sample1, feather_sample2, feather_sample3, feather_sample4, feather_sample5)
 
-ggplot(feathers, aes(x = x_coord, y = y_coord, color = "red")) +
-  geom_point() +
-  xlim(-100, 10) +
-  ylim(-100, 10)
+ggplot(feather_sample1, aes(x = x_coord, y = y_coord, color = "red")) +
+  geom_line() 
 
+ggplot(feathers, aes(x = x_coord, y = y_coord, color = "red")) +
+    geom_point() +
+    xlim(-50, 10) +
+    ylim(-50, 10)
 
 ```
 
+```{r}
+text <- gutenberg_download(36) %>%
+  mutate(text = str_to_lower(text, locale = "en"))
+
+afinn <- get_sentiments("afinn")
+
+text_afinn <- text %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  count(word, sort = TRUE) %>%
+  inner_join(afinn, by = "word") %>% 
+  mutate(prob = n/sum(n),
+         impact = abs(n * value)) %>%
+  arrange(desc(impact)) 
+
+sentiment <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n)
+
+sentiment
+```
+
+```{r}
+feathers_many <- bind_rows(replicate(100, 
+                    sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
+  mutate(color_val = row_number()) %>%
+  select(word, value, color_val) %>%
+  mutate(x_coord = cumsum(case_when(value == 1 ~ .78,
+                             value == 2 ~ .97,
+                             value == 3 ~ .43,
+                             value == -1 ~ -.78,
+                             value == -2 ~ -.97,
+                             value == -3 ~ -.43)),
+         y_coord = cumsum(case_when(value == 1 ~ .62,
+                             value == 2 ~ -.22,
+                             value == 3 ~ -.9,
+                             value == -1 ~ .62,
+                             value == -2 ~ -.22,
+                             value == -3 ~ -.9))), 
+                    simplify = FALSE))
+
+ggplot(feathers_many, aes(x = x_coord, y = y_coord)) +
+  geom_point(alpha = 0.01)
+```
 
