@@ -1,0 +1,209 @@
+---
+title: "Temporary Title"
+description: |
+  Insert a short description of the post.
+author:
+  - name: Amrita K. Sawhney 
+  - name: Maxwell J.D. VanLandschoot
+date: 2021-05-11
+output:
+  distill::distill_article:
+    self_contained: false
+    code_folding: true
+categories:
+  - Art
+  - Books
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+###Introduction to the Project
+
+What is art? Now, not to get too pithy or metaphysical, art is really just finding a way to tell a story or convey some message to an audience. To us, and probably many other data scientists out there, data innately carries with it this artistic quality. While a .csv full of numbers and variables might not have the same accessible and aesthetic qualities we are used to in the art we consume, there is nonetheless beauty to be found. With this project we wanted to go beyond our usual representations of data --graphs and regressions-- and present another way with which to view it.
+
+The data we chose to serve as the basis of our art are sentiment analyses from various books in the Gutenberg Library. We did this for the primary reason that the sentiment of a book is difficult to plot on a graph or sum nicely into a statistic. It’s not impossible, of course, because I can tell you, for example, that the overall sentiment of The War of the Worlds is -0.393 and the most impactful word is “like.” But we don’t feel like you get the full picture of what the book feels like just from those statistics. Our various attempts at art below will hopefully serve to help bridge that gap between data and understanding. Or, at the very least, we hope to give you a glimpse into the world of data art and the capabilities of R. 
+
+```{r, Text Sentiment Basic Example, code_folding = TRUE, eval = FALSE}
+library(tidyverse)
+library(gutenbergr)
+
+text <- gutenberg_download(36) %>%
+  mutate(text = str_to_lower(text, locale = "en"))
+
+afinn <- get_sentiments("afinn")
+
+text_afinn <- text %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  count(word, sort = TRUE) %>%
+  inner_join(afinn, by = "word") %>% 
+  mutate(prob = n/sum(n),
+         impact = abs(n * value)) %>%
+  arrange(desc(impact)) 
+
+sentiment <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n)
+
+sentiment
+```
+
+Before we can make any art, we need to first collect our relevant data. As we mentioned previously, we are using texts from the Gutenberg Library with the gutenbergr library. Once the book is pulled in we “tokenize” it by breaking it into individual words. From this we obtain the affinity score for each word --a -5 to 5 ranking that shows just how negative or positive any given word is. After we calculate individual sentiments, we sum negative, positive, and all values to obtain three different sentiment scores which will be applicable later.
+
+```{r, Pulling Data from Gutenbergr, code_folding = TRUE}
+library(tidyverse)
+library(gutenbergr)
+library(tidytext)
+
+text <- gutenberg_download(text_num) %>%
+  mutate(text = str_to_lower(text, locale = "en"))
+
+afinn <- get_sentiments("afinn")
+
+text_afinn <- text %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  count(word, sort = TRUE) %>%
+  inner_join(afinn, by = "word") %>% 
+  mutate(prob = n/sum(n)) %>%
+  arrange(desc(n)) 
+
+text_neg <- text_afinn %>%
+  filter(value < 0) %>%
+  arrange(desc(n))
+
+text_pos <- text_afinn %>%
+  filter(value > 0) %>%
+  arrange(desc(n))
+
+# R's seed will only accept values between 1-10000, that's the purpose of *10000
+senti <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) * 10000
+
+senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
+
+senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
+
+senti <- abs(round(senti))
+```
+
+The last thing, before attempting to create anything, is to build a way to include colors in our art. We wanted our texts to dictate what colors are used, and since it would be infeasible and impractical to manually sort for colors, we needed to create a way to identify every color within our texts. The process is fairly simple using the stringr function str_extract, all we need to do is provide a list of colors. There are two ways we could do this, the first is to copy and paste over a list of the hundred or so most common colors. The second way, which we elected to do, is to scrape Wikipedia’s lists of all colors --over 1000 total. With this list of colors we can compare it to our text, and pull out every matching instance. Corresponding hexadecimal codes are also added to account for non-standard colors. 
+
+```{r, Wikipedia Color Scraping, code_folding = TRUE}
+library(rvest)
+library(httr)
+library(stringr)
+
+url <- "https://en.wikipedia.org/wiki/List_of_colors:_A%E2%80%93F"
+tables <- url %>%
+  read_html() %>%
+  html_nodes(css = "table")
+colors1 <- html_table(tables[[1]], fill = TRUE)
+
+url <- "https://en.wikipedia.org/wiki/List_of_colors:_G%E2%80%93M"
+tables <- url %>%
+  read_html() %>%
+  html_nodes(css = "table")
+colors2 <- html_table(tables[[1]], fill = TRUE)
+
+url <- "https://en.wikipedia.org/wiki/List_of_colors:_N%E2%80%93Z"
+tables <- url %>%
+  read_html() %>%
+  html_nodes(css = "table")
+colors3 <- html_table(tables[[1]], fill = TRUE)
+
+colors_scrape <- rbind(colors1, colors2, colors3) %>%
+  mutate(Name = str_to_lower(Name, locale = "en"),
+         Name = str_replace(Name, " \\s*\\([^\\)]+\\)", "")) %>%
+  distinct(Name, .keep_all = TRUE)
+
+colors <- colors_scrape %>%
+  select(Name) 
+
+colors_all <- colors %>%
+  summarise(Name = paste0(Name, collapse = "|")) %>%
+  as.character(expression())
+
+colors_all <- paste0("\\b(", colors_all, ")\\b")
+
+text_grammed <- text %>%
+  unnest_tokens(output = word, input = text,
+  token = "ngrams", n = 3)
+
+colors_parsed <- text_grammed %>%
+  mutate(Name = str_extract(word, pattern = colors_all)) %>%
+  drop_na() %>%
+  select(Name)
+
+colors_counted <- colors_parsed %>%
+  group_by(Name) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(prob = n/sum(n)) %>%
+  arrange(desc(n))
+  
+colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
+  select(Name, `Hex(RGB)`, n, prob) %>%
+  rename(Hex = `Hex(RGB)`) 
+```
+
+The first art generation tool we used was inspired by and utilizing the generativeart library. This works by using random number generation and the positive and negative sentiment values calculated previously. So, each artwork produced with this method is unique and dependent on that specific text’s sentiment. 
+
+(add image to this)
+
+```{r, Generative Art, code_folding = TRUE}
+library(generativeart)
+
+IMG_DIR <- "img_new/"
+IMG_SUBDIR <- "everything/"
+IMG_SUBDIR2 <- "handpicked/"
+IMG_PATH <- paste0(IMG_DIR, IMG_SUBDIR)
+
+LOGFILE_DIR <- "logfile/"
+LOGFILE <- "logfile.csv"
+LOGFILE_PATH <- paste0(LOGFILE_DIR, LOGFILE)
+
+# directory
+generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
+
+# Setting colors
+color_background <- colors_final[2, 2]
+color_background <- color_background %>%
+  as.character(expression())
+
+color_main <- colors_final[1, 2]
+color_main <- color_main %>%
+  as.character(expression())
+
+# Formula:
+my_formula <- list(
+  x = quote(runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)),
+  y = quote(runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2))
+)
+
+# Generating image
+generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ...) {
+    set.seed(senti)
+    file_name <- generate_filename(senti, filetype)
+    logfile <- check_logfile_existence()
+    logfile <- generate_logfile_entry(logfile, formula, senti, file_name)
+    df <- generate_data(formula)
+    plot <- generate_plot(df, file_name, polar, filetype, ...)
+}
+
+generate_img_fix(formula = my_formula, 
+                 senti, 
+                 polar = TRUE, 
+                 filetype = "png", 
+                 color = color_main, 
+                 background_color = color_background)
+```
+
+We also wanted the title of the piece to be generated at random from the text. Specifically, we did this by randomly sampling three words from the sentiment analysis, based on their proportion of appearance in the sample.
+
+```{r, Title Generation}
+set.seed(senti)
+
+title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
+  select(word) %>%
+  print()
+```
