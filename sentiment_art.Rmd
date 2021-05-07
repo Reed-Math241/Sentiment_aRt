@@ -62,7 +62,7 @@ colors_all <- paste0("\\b(", colors_all, ")\\b")
 
 # give me a gutenburg text number -- this is because the function kept breaking
 
-text_num <- 215
+text_num <- 7462
 
 # pretty ones: 7462
 
@@ -92,13 +92,13 @@ text_pos <- text_afinn %>%
   arrange(desc(n))
 
 # R's seed will only accept values between 1-10000, that's the purpose of *10000
-senti <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) * 10000
+senti_raw <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) * 10000
 
 senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
 
 senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
 
-senti <- abs(round(senti))
+senti <- abs(round(senti_raw))
 
 set.seed(senti)
 ```
@@ -186,114 +186,131 @@ title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
 
 ```{r}
 
-# Not my code go to: https://jean.fan/art-with-code/portfolio/20180720_mondrian/
+my_formula <- list(
+  x = quote(runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)),
+  y = quote(runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2))
+)
 
-composition <- function(
-  width=100, height=100,
-  minDistApart=round(min(width, height)/20),
-  fixedLines=FALSE, seed=NA) {
 
-  if(!is.na(senti)) {
-    set.seed(senti)
-  }
+generative_art <- function(formula = my_formula, 
+                           polar = TRUE, 
+                           title = TRUE, 
+                           main_color = color_main, 
+                           background_color = color_background) {
+  
+  require(tidyverse)
+  require(cowplot)
+  
+  set.seed(senti)
+  
+  df <- seq(from = -pi, to = pi, by = 0.01) %>%
+    expand.grid(x_i = ., y_i = .) %>%
+    mutate(!!!formula)
 
-  # set colors; red, yellow, blue, black, white
-  colors <- c(colors_final$Hex)
-  # more likely to sample white, least likely to sample black
-  p <- c(colors_final$prob)
-
-  # random number of horizontal and vertical lines
-  # more likely to sample lower number
-  nLinesX <- sample(2:floor(width/minDistApart), 1, p=1/(2:floor(width/minDistApart)))
-  # make sure lines are not too close together
-  x <- sample(1:floor(width/minDistApart), nLinesX)*minDistApart
-  x <- sort(x)
-  nLinesY <- sample(2:floor(height/minDistApart), 1, p=1/(2:floor(height/minDistApart)))
-  y <- sample(1:floor(height/minDistApart), nLinesY)*minDistApart
-  y <- sort(y)
-
-  # set line width
-  if(fixedLines) {
-    lineWidthX <- rep(round(min(width, height)/20), nLinesX)
-    lineWidthY <- rep(round(min(width, height)/20), nLinesY)
+    if (polar == TRUE) {
+    plot <- df %>%
+      ggplot(aes(x = x, y = y)) +
+      geom_point(alpha = 0.1, size = 0, shape = 20, color = main_color) +
+      theme_void() +
+      coord_fixed() +
+      coord_polar() +
+      theme(
+        panel.background = element_rect(fill = background_color, color = background_color),
+        plot.background = element_rect(fill = background_color, color = background_color)
+        )
   } else {
-    lineWidthX <- sample(round(min(width, height)/20):round(min(width, height)/5), nLinesX, replace=TRUE)
-    lineWidthY <- sample(round(min(width, height)/20):round(min(width, height)/5), nLinesY, replace=TRUE)
+    plot <- df %>%
+      ggplot(aes(x = x, y = y)) +
+      geom_point(alpha = 0.1, size = 0, shape = 20, color = main_color) +
+      theme_void() +
+      coord_fixed() +
+      theme(
+        panel.background = element_rect(fill = background_color, color = background_color),
+        plot.background = element_rect(fill = background_color, color = background_color)
+        )
   }
-
-  # randomly decide whether to go to edge
-  if(sample(c(TRUE, FALSE), 1)) {
-    x <- c(0, x)
-    lineWidthX <- c(0, lineWidthX)
+  
+  if(title == TRUE) {
+    
+    title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
+    select(word)
+    
+    title <- title %>%
+        summarise(word = paste0(word, collapse = " ")) %>%
+        as.character(expression())
+      
+    p <- ggdraw(plot) +
+      draw_label(title, x = 0.65, y = 0.05, hjust = 0, vjust = 0,
+                 fontfamily = "Roboto Condensed", fontface = "plain", color = color_main, size = 10)
+    
+    ggsave("genart.png", plot = p)
+    
+    p
+  } else{
+    ggsave("genart.png", plot = plot)
+    
+    plot
   }
-  if(sample(c(TRUE, FALSE), 1)) {
-    x <- c(x, width)
-    lineWidthX <- c(lineWidthX, 0)
-  }
-  if(sample(c(TRUE, FALSE), 1)) {
-    y <- c(0, y)
-    lineWidthY <- c(0, lineWidthY)
-  }
-  if(sample(c(TRUE, FALSE), 1)) {
-    y <- c(y, height)
-    lineWidthY <- c(lineWidthY, 0)
-  }
-
-  # plot
-  plot(NULL, xlim=c(0, width), ylim=c(0, height), axes=FALSE, frame.plot=TRUE, xlab='', ylab='', xaxs = "i", yaxs = "i")
-  # add lines
-  abline(v=x, lwd=lineWidthX)
-  abline(h=y, lwd=lineWidthY)
-  # add colored polygons
-  for(i in 1:(length(y))) {
-    for(j in 1:(length(x))) {
-      randColor <- sample(colors, 1, prob=p) # random color
-      k = sample(y[-i], 1)
-      l = sample(x[-j], 1)
-      polygon(c(x[j], l, l, x[j]), c(y[i], y[i], k, k), col=randColor, border='black', lwd = round(min(width, height)/20))
-    }
-  }
-
+  
 }
 
-# Runner
-par(mfrow=c(1,1), mar=rep(1,4))
-composition(fixedLines=TRUE, seed=NA)
+generative_art()
 ```
+
 
 ```{r}
-# https://jean.fan/art-with-code/portfolio/20180721_tunnel/
+# https://chichacha.netlify.app/2019/01/29/playing-around-with-phyllotactic-spirals/
 
-library(grid) 
+library(magick) ## I'm now a magick fan!!! 
+library(scales) ## Handy when it comes to scaling, but I also love show_col function
+library(patchwork) ## put ggplot side by side easily :) 
 
-## Number of frames
-N <- 500
-## Number of colors
-k <- 100
-## N/k is number of times color palette will repeat
+## Let's just set some of my favourite number.
+phi <- (1 + sqrt(5)) / 2 
+golden_angle <- pi*(3-sqrt(5))
 
-## Some sample colors
-colors <- rep(rainbow(k, s=0.8), N/k)
-#colors <- rep(colorRampPalette(c('orange','yellow', 'darkorange'))(k), N/k)
-#colors <- rep(colorRampPalette(c('white', 'pink', 'white', 'lightblue', 'white'))(k), N/k)
-#colors <- colorRampPalette(c('beige', 'forestgreen', 'darkgreen'))(N)
-
-## Draw background
-dev.new()
-pushViewport(viewport(width=1, height=1, angle=0))
-grid.rect(gp = gpar(col = NA, fill = colors[1]))
-
-## Scale viewport and rotate
-for(i in 2:N){
-  ## Optionally try increasing the angle or increasing the scale rate
-  pushViewport(viewport(width=0.99, height=0.99, angle=1))
-  # Optionally try: grid.circle(), grid.roundedrect()
-  grid.rect(
-    # Optionally shift: x = 0, y = 1,
-    gp = gpar(col = NA, fill = colors[i])
+create_art <- function(n=1800,u=5,v=0,angle=golden_angle,colors="#ffffff",...){
+  
+  my_colours <- colors ## default is using one colour, white, but I can use vector of colours too. 
+  
+  ## Create data frame first using those parameters specified above
+  df <- tibble(
+    idx = c(0:(n-1)), ## you can increase the number here to use more lines.
+    t = seq(0,2*pi,length.out=n),  ## since I used 0 to 1800 above, need to add 1
+    r = sqrt(idx), ## radius   
+    x = r*cos(angle*idx),
+    y = r*sin(angle*idx),
+    color_angle = atan2(y=y,x=x) ## get angle between x-axos and the vector from the origin to x,y
   )
+  
+  ## In case you specified m2>m then change 
+  v <- ifelse(v<u,v,v%%u)
+  max_r <- max(df$r)*1.1
+  #print(max_r)
+  
+  my_art <- df %>% 
+    ggplot(aes(x=x,y=y,color=color_angle)) +
+    geom_path(data= . %>% filter(idx%%u==v), ## only use partial data to connect the dots
+              lineend="round", linejoin="mitre", linemitre=3,
+              aes(size=idx, alpha=idx)) + 
+    coord_fixed() +
+    theme_void() +
+    scale_alpha_continuous(guide="none", range=c(0,1), trans="sqrt")+ 
+    scale_size_continuous(guide="none",  range=c(10,0), trans="sqrt") +
+    scale_color_gradientn(guide="none", 
+                          colors=color_main) +
+    theme(panel.background = element_rect(fill=color_background)) +
+    expand_limits(x=c(-max_r,max_r),y=c(-max_r,max_r)) 
+    
+  my_art + annotate(geom="text", x=Inf,y=-Inf,
+                    label=str_glue('n: {n} | u: {u} | v: {v} | angle: {round(angle,3)} radian'),
+                    family="Roboto Condensed", color="#ffffffae",
+                    hjust=1,vjust=-1)
 }
+
+create_art(n = 360,u = 2) 
 ```
+
 
 ```{r}
 # trying to make something that works vaguely like: https://datatricks.co.uk/the-hidden-art-in-pi
@@ -332,14 +349,15 @@ book_coords_7deg <- text_unsort_simp %>%
                              value == -3 ~ -.9)),
          color_val = row_number())
 
-ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord, color = color_val)) +
+ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord)) +
+    geom_path() +
   geom_point(size = .1) +
-  scale_color_continuous(high = "dark red", low = "white") +
+#  scale_color_continuous(high = "dark red", low = "white") +
   theme(line = element_blank(),
         text = element_blank(),
         title = element_blank(),
-        panel.background = element_rect(fill = "black",
-                                colour = "black",
+        panel.background = element_rect(fill = color_background,
+                                colour = color_background,
                                 size = 0.5, linetype = "solid"))
 
 ```
@@ -514,6 +532,117 @@ feathers_many <- bind_rows(replicate(100,
                     simplify = FALSE))
 
 ggplot(feathers_many, aes(x = x_coord, y = y_coord)) +
+  geom_path() +
   geom_point(alpha = 0.01)
 ```
 
+```{r}
+
+# Not my code go to: https://jean.fan/art-with-code/portfolio/20180720_mondrian/
+
+composition <- function(
+  width=100, height=100,
+  minDistApart=round(min(width, height)/20),
+  fixedLines=FALSE, seed=NA) {
+
+  if(!is.na(senti)) {
+    set.seed(senti)
+  }
+
+  # set colors; red, yellow, blue, black, white
+  colors <- c(colors_final$Hex)
+  # more likely to sample white, least likely to sample black
+  p <- c(colors_final$prob)
+
+  # random number of horizontal and vertical lines
+  # more likely to sample lower number
+  nLinesX <- sample(2:floor(width/minDistApart), 1, p=1/(2:floor(width/minDistApart)))
+  # make sure lines are not too close together
+  x <- sample(1:floor(width/minDistApart), nLinesX)*minDistApart
+  x <- sort(x)
+  nLinesY <- sample(2:floor(height/minDistApart), 1, p=1/(2:floor(height/minDistApart)))
+  y <- sample(1:floor(height/minDistApart), nLinesY)*minDistApart
+  y <- sort(y)
+
+  # set line width
+  if(fixedLines) {
+    lineWidthX <- rep(round(min(width, height)/20), nLinesX)
+    lineWidthY <- rep(round(min(width, height)/20), nLinesY)
+  } else {
+    lineWidthX <- sample(round(min(width, height)/20):round(min(width, height)/5), nLinesX, replace=TRUE)
+    lineWidthY <- sample(round(min(width, height)/20):round(min(width, height)/5), nLinesY, replace=TRUE)
+  }
+
+  # randomly decide whether to go to edge
+  if(sample(c(TRUE, FALSE), 1)) {
+    x <- c(0, x)
+    lineWidthX <- c(0, lineWidthX)
+  }
+  if(sample(c(TRUE, FALSE), 1)) {
+    x <- c(x, width)
+    lineWidthX <- c(lineWidthX, 0)
+  }
+  if(sample(c(TRUE, FALSE), 1)) {
+    y <- c(0, y)
+    lineWidthY <- c(0, lineWidthY)
+  }
+  if(sample(c(TRUE, FALSE), 1)) {
+    y <- c(y, height)
+    lineWidthY <- c(lineWidthY, 0)
+  }
+
+  # plot
+  plot(NULL, xlim=c(0, width), ylim=c(0, height), axes=FALSE, frame.plot=TRUE, xlab='', ylab='', xaxs = "i", yaxs = "i")
+  # add lines
+  abline(v=x, lwd=lineWidthX)
+  abline(h=y, lwd=lineWidthY)
+  # add colored polygons
+  for(i in 1:(length(y))) {
+    for(j in 1:(length(x))) {
+      randColor <- sample(colors, 1, prob=p) # random color
+      k = sample(y[-i], 1)
+      l = sample(x[-j], 1)
+      polygon(c(x[j], l, l, x[j]), c(y[i], y[i], k, k), col=randColor, border='black', lwd = round(min(width, height)/20))
+    }
+  }
+
+}
+
+# Runner
+par(mfrow=c(1,1), mar=rep(1,4))
+composition(fixedLines=TRUE, seed=NA)
+```
+
+```{r}
+# https://jean.fan/art-with-code/portfolio/20180721_tunnel/
+
+library(grid) 
+
+## Number of frames
+N <- 500
+## Number of colors
+k <- 100
+## N/k is number of times color palette will repeat
+
+## Some sample colors
+colors <- rep(rainbow(k, s=0.8), N/k)
+#colors <- rep(colorRampPalette(c('orange','yellow', 'darkorange'))(k), N/k)
+#colors <- rep(colorRampPalette(c('white', 'pink', 'white', 'lightblue', 'white'))(k), N/k)
+#colors <- colorRampPalette(c('beige', 'forestgreen', 'darkgreen'))(N)
+
+## Draw background
+dev.new()
+pushViewport(viewport(width=1, height=1, angle=0))
+grid.rect(gp = gpar(col = NA, fill = colors[1]))
+
+## Scale viewport and rotate
+for(i in 2:N){
+  ## Optionally try increasing the angle or increasing the scale rate
+  pushViewport(viewport(width=0.99, height=0.99, angle=1))
+  # Optionally try: grid.circle(), grid.roundedrect()
+  grid.rect(
+    # Optionally shift: x = 0, y = 1,
+    gp = gpar(col = NA, fill = colors[i])
+  )
+}
+```
