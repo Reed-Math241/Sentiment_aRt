@@ -257,6 +257,21 @@ generative_art <- function(formula = my_formula,
 generative_art()
 ```
 
+```{r}
+gutenberg_works <- gutenberg_works(languages = "en", only_text = TRUE) %>%
+  select(title, gutenberg_id) %>%
+  drop_na()
+
+title_s <- "Moby Dick"
+
+text_num <- gutenberg_works %>%
+  filter(title == title_s) %>%
+  select(gutenberg_id)
+  
+  text <- gutenberg_download(text_num) %>%
+    mutate(text = str_to_lower(text, locale = "en"))
+```
+
 
 ```{r}
 # https://chichacha.netlify.app/2019/01/29/playing-around-with-phyllotactic-spirals/

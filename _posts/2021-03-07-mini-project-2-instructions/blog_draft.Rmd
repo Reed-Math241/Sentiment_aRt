@@ -56,6 +56,8 @@ library(tidyverse)
 library(gutenbergr)
 library(tidytext)
 
+text_num <- 7462
+
 text <- gutenberg_download(text_num) %>%
   mutate(text = str_to_lower(text, locale = "en"))
 
@@ -144,28 +146,7 @@ colors_counted <- colors_parsed %>%
 colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
   select(Name, `Hex(RGB)`, n, prob) %>%
   rename(Hex = `Hex(RGB)`) 
-```
 
-The first art generation tool we used was inspired by and utilizing the generativeart library. This works by using random number generation and the positive and negative sentiment values calculated previously. So, each artwork produced with this method is unique and dependent on that specific text’s sentiment. 
-
-(add image to this)
-
-```{r, Generative Art, code_folding = TRUE}
-library(generativeart)
-
-IMG_DIR <- "img_new/"
-IMG_SUBDIR <- "everything/"
-IMG_SUBDIR2 <- "handpicked/"
-IMG_PATH <- paste0(IMG_DIR, IMG_SUBDIR)
-
-LOGFILE_DIR <- "logfile/"
-LOGFILE <- "logfile.csv"
-LOGFILE_PATH <- paste0(LOGFILE_DIR, LOGFILE)
-
-# directory
-generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
-
-# Setting colors
 color_background <- colors_final[2, 2]
 color_background <- color_background %>%
   as.character(expression())
@@ -173,37 +154,86 @@ color_background <- color_background %>%
 color_main <- colors_final[1, 2]
 color_main <- color_main %>%
   as.character(expression())
+```
 
-# Formula:
+The first art generation tool we used was inspired by the generativeart library. This works by using random number generation and the positive and negative sentiment values calculated previously. So, each artwork produced with this method is unique and dependent on that specific text’s sentiment. We also wanted the title of the piece to be generated at random from the text. Specifically, we did this by randomly sampling three words from the sentiment analysis, based on their proportion of appearance in the sample.
+
+```{r, Generative Art, code_folding = TRUE}
 my_formula <- list(
   x = quote(runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)),
   y = quote(runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2))
 )
 
-# Generating image
-generate_img_fix <- function(formula, senti, polar = FALSE, filetype = "png", ...) {
-    set.seed(senti)
-    file_name <- generate_filename(senti, filetype)
-    logfile <- check_logfile_existence()
-    logfile <- generate_logfile_entry(logfile, formula, senti, file_name)
-    df <- generate_data(formula)
-    plot <- generate_plot(df, file_name, polar, filetype, ...)
+
+generative_art <- function(formula = my_formula, 
+                           polar = TRUE, 
+                           title = TRUE, 
+                           main_color = color_main, 
+                           background_color = color_background) {
+  
+  require(tidyverse)
+  require(cowplot)
+  
+  set.seed(senti)
+  
+  df <- seq(from = -pi, to = pi, by = 0.01) %>%
+    expand.grid(x_i = ., y_i = .) %>%
+    mutate(!!!formula)
+
+    if (polar == TRUE) {
+    plot <- df %>%
+      ggplot(aes(x = x, y = y)) +
+      geom_point(alpha = 0.1, size = 0, shape = 20, color = main_color) +
+      theme_void() +
+      coord_fixed() +
+      coord_polar() +
+      theme(
+        panel.background = element_rect(fill = background_color, color = background_color),
+        plot.background = element_rect(fill = background_color, color = background_color)
+        )
+  } else {
+    plot <- df %>%
+      ggplot(aes(x = x, y = y)) +
+      geom_point(alpha = 0.1, size = 0, shape = 20, color = main_color) +
+      theme_void() +
+      coord_fixed() +
+      theme(
+        panel.background = element_rect(fill = background_color, color = background_color),
+        plot.background = element_rect(fill = background_color, color = background_color)
+        )
+  }
+  
+  if(title == TRUE) {
+    
+    title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
+    select(word)
+    
+    title <- title %>%
+        summarise(word = paste0(word, collapse = " ")) %>%
+        as.character(expression())
+      
+    p <- ggdraw(plot) +
+      draw_label(title, x = 0.65, y = 0.05, hjust = 0, vjust = 0,
+                 fontfamily = "Roboto Condensed", fontface = "plain", color = color_main, size = 10)
+    
+    ggsave("genart.png", plot = p)
+    
+    p
+    
+  } else{
+    ggsave("genart.png", plot = plot)
+    
+    plot
+  }
+
 }
 
-generate_img_fix(formula = my_formula, 
-                 senti, 
-                 polar = TRUE, 
-                 filetype = "png", 
-                 color = color_main, 
-                 background_color = color_background)
+generative_art(polar = TRUE)
 ```
 
-We also wanted the title of the piece to be generated at random from the text. Specifically, we did this by randomly sampling three words from the sentiment analysis, based on their proportion of appearance in the sample.
+The code we used, an observant reader might note, can create art based on polar or cartesian coordinates. The example below uses cartesian coordinates and shows, just like with any form of data visualization, how author inputs can have a massive effect on the final product.
 
-```{r, Title Generation}
-set.seed(senti)
-
-title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
-  select(word) %>%
-  print()
+```{r}
+generative_art(polar = FALSE, title = FALSE)
 ```
+
