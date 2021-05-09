@@ -27,7 +27,7 @@ What is art? Now, not to get too pithy or metaphysical, art is really just findi
 
 The data we chose to serve as the basis of our art are sentiment analyses from various books in the Gutenberg Library. We did this for the primary reason that the sentiment of a book is difficult to plot on a graph or sum nicely into a statistic. It’s not impossible, of course, because I can tell you, for example, that the overall sentiment of The War of the Worlds is -0.393 and the most impactful word is “like.” But we don’t feel like you get the full picture of what the book feels like just from those statistics. Our various attempts at art below will hopefully serve to help bridge that gap between data and understanding. Or, at the very least, we hope to give you a glimpse into the world of data art and the capabilities of R. 
 
-```{r, Text Sentiment Basic Example, code_folding = TRUE, eval = FALSE}
+```{r, Text Sentiment Basic Example, code_folding = FALSE, eval = FALSE}
 library(tidyverse)
 library(gutenbergr)
 
@@ -49,7 +49,7 @@ sentiment <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n)
 sentiment
 ```
 
-Before we can make any art, we need to first collect our relevant data. As we mentioned previously, we are using texts from the Gutenberg Library with the gutenbergr library. Once the book is pulled in we “tokenize” it by breaking it into individual words. From this we obtain the affinity score for each word --a -5 to 5 ranking that shows just how negative or positive any given word is. After we calculate individual sentiments, we sum negative, positive, and all values to obtain three different sentiment scores which will be applicable later.
+Before we can make any art, we need to first collect our relevant data. As we mentioned previously, we are using texts from the Gutenberg Library with the gutenbergr library. For these first two pieces, we're using the book "Stories for Ninon" by Émile Zola. There, honestly, is not a deep reason behind why we're starting with this book, the results were just striking. With a text chosen, we download it using 'gutenberg_download'. Once the book is downloaded we “tokenize” it by breaking it into individual words. From this we obtain the affinity score for each word. An affinity score is a -5 to 5 ranking given to each word that shows just how negative or positive any given word is. For example, "breathtaking" gets a rating of 5, while a word like "catastrophic" gets a -4 (I would give an example of a word with a -5 rating, trust me there are a few, but they are all too profane to put into a blog). 
 
 ```{r, Pulling Data from Gutenbergr, code_folding = TRUE}
 library(tidyverse)
@@ -77,20 +77,23 @@ text_neg <- text_afinn %>%
 text_pos <- text_afinn %>%
   filter(value > 0) %>%
   arrange(desc(n))
+```
 
-# R's seed will only accept values between 1-10000, that's the purpose of *10000
-senti <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) * 10000
+After we calculate individual sentiments, we sum negative, positive, and all values divided by the number of words counted to obtain three different sentiment scores which will be applicable later. These three scores tell us three things, how negative the negative elements of the text are, how positive the positive elements of the text are, and how positive or negative it is overall. The last step here multiplies the sentiment score by 10000, rounds it to the nearest whole number, and takes the absolute value as to only output positive values. This may seem odd, but this value will be used to set the "seed" for future plots where randomization is used so that our art is reproducible, and R only uses seeds between 1 and 10000.
+
+```{r, Sentiment Scores}
+senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
 
 senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
 
-senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
+senti_raw <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) 
 
-senti <- abs(round(senti))
+senti <- abs(round(senti_raw * 10000))
 ```
 
-The last thing, before attempting to create anything, is to build a way to include colors in our art. We wanted our texts to dictate what colors are used, and since it would be infeasible and impractical to manually sort for colors, we needed to create a way to identify every color within our texts. The process is fairly simple using the stringr function str_extract, all we need to do is provide a list of colors. There are two ways we could do this, the first is to copy and paste over a list of the hundred or so most common colors. The second way, which we elected to do, is to scrape Wikipedia’s lists of all colors --over 1000 total. With this list of colors we can compare it to our text, and pull out every matching instance. Corresponding hexadecimal codes are also added to account for non-standard colors. 
+The last thing, before attempting to create anything, is to build a way to include colors in our art. We wanted our texts to dictate what colors are used, and since it would be infeasible and impractical to manually sort for colors, we needed to create a way to identify every color within our texts. The process is fairly simple using the 'stringr' function 'str_extract', all we need to do is provide a list of colors to compare to the text. There are two ways we could do this, the first is to copy and paste over a list of the hundred or so most common colors. The second way, which we elected to do, is to scrape Wikipedia’s lists of all colors --over 800 total. Our next step is to go back to our "tokenization" of the text which breaks our text into individual words. If we were to only tokenize our text into individual words while looking for color we would miss all of the lovely two and three word colors like 'international orange' or 'deep space sparkle'. Now, we don't think we will run across many, if any, of these odd colors, but we wanted to be thorough. To ensure we did not lose any colors we broke our text up into n-grams of length 3, a fancy way of saying into three-word chunks. We are, then, left with every three-word combination that appears in the text. This process takes longer and is more computationally demanding than with typical one-word tokenizing, but, again, we wanted to be extra sure we are getting every color. With this list of colors we can compare it to our text and pull out every matching instance of a color. Corresponding hexadecimal codes are also added to account for non-standard colors.
 
-```{r, Wikipedia Color Scraping, code_folding = TRUE}
+```{r, Color Identification, code_folding = TRUE}
 library(rvest)
 library(httr)
 library(stringr)
@@ -119,7 +122,7 @@ colors_scrape <- rbind(colors1, colors2, colors3) %>%
   distinct(Name, .keep_all = TRUE)
 
 colors <- colors_scrape %>%
-  select(Name) 
+  select(Name)
 
 colors_all <- colors %>%
   summarise(Name = paste0(Name, collapse = "|")) %>%
@@ -146,24 +149,25 @@ colors_counted <- colors_parsed %>%
 colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
   select(Name, `Hex(RGB)`, n, prob) %>%
   rename(Hex = `Hex(RGB)`) 
-
-color_background <- colors_final[2, 2]
-color_background <- color_background %>%
-  as.character(expression())
-
-color_main <- colors_final[1, 2]
-color_main <- color_main %>%
-  as.character(expression())
 ```
 
-The first art generation tool we used was inspired by the generativeart library. This works by using random number generation and the positive and negative sentiment values calculated previously. So, each artwork produced with this method is unique and dependent on that specific text’s sentiment. We also wanted the title of the piece to be generated at random from the text. Specifically, we did this by randomly sampling three words from the sentiment analysis, based on their proportion of appearance in the sample.
+The first art generation tool we used was inspired by the 'generativeart' library. This works by using random number generation --based on the sentiment score of the book-- and the positive and negative sentiment values calculated previously. So, each artwork produced with this method is unique and dependent on that specific text’s sentiment. This also means that texts with more extreme sentiments tend to yield more varied results. For this piece we also wanted its colors and title to be rooted in the text. For the colors, they are simply the two most common colors to appear in the text. For the title, we randomly sampled three words from the sentiment analysis, based on their proportion of appearance in the sample, so words that appear more often in the text are more likely to appear in the title. The lovely generated title for this next piece is "Grand Commit Fan." For aesthetic reasons we chose to not include the title on our output, though this is toggleable through the function with 'title = TRUE' and it will put the generated name in the bottom right corner.
 
-```{r, Generative Art, code_folding = TRUE}
+```{r, Polar Generative Art, code_folding = TRUE, preview = TRUE}
 my_formula <- list(
   x = quote(runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)),
   y = quote(runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2))
 )
 
+color_main <- colors_final %>%
+  filter(row_number() == 1) %>%
+  select(Hex) %>%
+  as.character()
+  
+color_background <- colors_final %>%
+  filter(row_number() == 2) %>%
+  select(Hex) %>%
+  as.character()
 
 generative_art <- function(formula = my_formula, 
                            polar = TRUE, 
@@ -206,7 +210,8 @@ generative_art <- function(formula = my_formula,
   if(title == TRUE) {
     
     title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
-    select(word)
+      select(word) %>%
+      mutate(word = str_to_title(word))
     
     title <- title %>%
         summarise(word = paste0(word, collapse = " ")) %>%
@@ -228,12 +233,127 @@ generative_art <- function(formula = my_formula,
 
 }
 
-generative_art(polar = TRUE)
+generative_art(polar = TRUE, title = FALSE)
 ```
 
-The code we used, an observant reader might note, can create art based on polar or cartesian coordinates. The example below uses cartesian coordinates and shows, just like with any form of data visualization, how author inputs can have a massive effect on the final product.
+The code we used, an observant reader might note, can create art based on polar or cartesian coordinates. The example below uses cartesian coordinates and shows, just like with any form of data visualization, how author inputs can have a massive effect on the final product. All of the code for a non-polar plot is the exact same save for the exclusion of 'coord_polar()'.
 
-```{r}
+```{r Non-Polar Generative Art}
 generative_art(polar = FALSE, title = FALSE)
 ```
 
+Our next attempt at data art is based off of the Jean Fan's tunnel art. This plot does not use randomization like the ones above, rather it takes a series of rectangles and incrementally "pushes" back and rotates to create a spiral shape. The angle of the rotation is based upon the raw sentiment score of the text and the colors used are pulled from the text. We're working with a different text than the previous pieces, so we'll need to re-run most of our previous code. 
+
+```{r Swirly Art Setup, code_folding = TRUE}
+text_num <- 5
+
+text <- gutenberg_download(text_num) %>%
+  mutate(text = str_to_lower(text, locale = "en"))
+
+afinn <- get_sentiments("afinn")
+
+text_afinn <- text %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  count(word, sort = TRUE) %>%
+  inner_join(afinn, by = "word") %>% 
+  mutate(prob = n/sum(n)) %>%
+  arrange(desc(n)) 
+
+text_neg <- text_afinn %>%
+  filter(value < 0) %>%
+  arrange(desc(n))
+
+text_pos <- text_afinn %>%
+  filter(value > 0) %>%
+  arrange(desc(n))
+
+senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
+
+senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
+
+senti_raw <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) 
+
+text_grammed <- text %>%
+  unnest_tokens(output = word, input = text,
+  token = "ngrams", n = 3)
+
+colors_parsed <- text_grammed %>%
+  mutate(Name = str_extract(word, pattern = colors_all)) %>%
+  drop_na() %>%
+  select(Name)
+
+colors_counted <- colors_parsed %>%
+  group_by(Name) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(prob = n/sum(n)) %>%
+  arrange(desc(n))
+  
+colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
+  select(Name, `Hex(RGB)`, n, prob) %>%
+  rename(Hex = `Hex(RGB)`) 
+```
+
+```{r Swirly Art}
+library(grDevices)
+library(grid) 
+
+# credit: https://jean.fan/art-with-code/portfolio/20180721_tunnel/
+
+colors_swirl <- colors_final %>%
+  slice_head(n = 3)
+
+# Gradient Colors
+vp <- viewport(x = 0, y = 0, width = 1, height = 1)
+grid.show.viewport(vp)
+
+colors <- colorRampPalette(c(colors_swirl$Hex))(500)
+
+pushViewport(viewport(width = 1, height = 1, angle = 0))
+
+grid.rect(gp = gpar(col = NA, fill = colors[1]))
+
+for(i in 2:500){
+  pushViewport(viewport(width = 0.99, height = 0.99, angle = senti_raw))
+  grid.rect(gp = gpar(col = NA, fill = colors[i])
+  )
+}
+
+# Repeating Colors
+vp <- viewport(x = 0, y = 0, width = 1, height = 1)
+grid.show.viewport(vp)
+
+colors_swirl <- colors_final %>%
+  slice_head(n = 3)
+
+colors <- rep(colorRampPalette(c(colors_swirl$Hex))(100), round(senti_pos) + 1)
+
+pushViewport(viewport(width = 1, height = 1, angle = 0))
+
+grid.rect(gp = gpar(col = NA, fill = colors[1]))
+
+for(i in 2:500){
+  pushViewport(viewport(width = 0.99, height = 0.99, angle = senti_raw))
+  grid.rect(gp = gpar(col = NA, fill = colors[i])
+  )
+}
+
+# All Colors
+vp <- viewport(x = 0, y = 0, width = 1, height = 1)
+grid.show.viewport(vp)
+
+colors_swirl <- colors_final %>%
+  slice_head(n = 3)
+
+colors <- rep(colorRampPalette(c(colors_final$Hex))(100), round(senti_pos) + 1)
+
+pushViewport(viewport(width = 1, height = 1, angle = 0))
+
+grid.rect(gp = gpar(col = NA, fill = colors[1]))
+
+for(i in 2:500){
+  pushViewport(viewport(width = 0.99, height = 0.99, angle = senti_raw))
+  grid.rect(gp = gpar(col = NA, fill = colors[i])
+  )
+}
+```

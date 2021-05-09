@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r packages}
 library(tidyverse)
 library(generativeart)
 library(gutenbergr)
@@ -17,7 +17,7 @@ library(tidytext)
 
 ```
 
-```{r}
+```{r color set up}
 # Color scraping and setup
 library(tidyverse)
 library(rvest)
@@ -127,9 +127,19 @@ colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
   select(Name, `Hex(RGB)`, n, prob) %>%
   rename(Hex = `Hex(RGB)`) 
 
+  color_main <- colors_final %>%
+    filter(row_number() == 1) %>%
+    select(Hex) %>%
+    as.character()
+  
+  color_background <- colors_final %>%
+    filter(row_number() == 2) %>%
+    select(Hex) %>%
+    as.character()
+
 ```
 
-```{r}
+```{r, eval = FALSE}
 # Generative Art
 library(generativeart)
 
@@ -146,13 +156,15 @@ LOGFILE_PATH <- paste0(LOGFILE_DIR, LOGFILE)
 generativeart::setup_directories(IMG_DIR, IMG_SUBDIR, IMG_SUBDIR2, LOGFILE_DIR)
 
 # Setting colors
-color_background <- colors_final[2, 2]
-color_background <- color_background %>%
-  as.character(expression())
-
-color_main <- colors_final[1, 2]
-color_main <- color_main %>%
-  as.character(expression())
+  color_main <- colors_final %>%
+    filter(row_number() == 1) %>%
+    select(Hex) %>%
+    as.character()
+  
+  color_background <- colors_final %>%
+    filter(row_number() == 2) %>%
+    select(Hex) %>%
+    as.character()
 
 # Formula:
 my_formula <- list(
@@ -179,9 +191,12 @@ generate_img_fix(formula = my_formula,
 
 set.seed(senti)
 
-title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
-  select(word) %>%
-  print()
+    title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
+    select(word)
+    
+    title <- title %>%
+        summarise(word = paste0(word, collapse = " ")) %>%
+        as.character(expression())
 ```
 
 ```{r}
@@ -258,6 +273,45 @@ generative_art()
 ```
 
 ```{r}
+library(rayshader)
+
+my_formula <- list(
+  x = quote(runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)),
+  y = quote(runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2))
+)
+
+  df <- seq(from = -pi, to = pi, by = 0.01) %>%
+    expand.grid(x_i = ., y_i = .) %>%
+    mutate(!!!my_formula)
+  
+    plot <- df %>%
+      ggplot(aes(x = x, y = y)) +
+      geom_hex() +
+      theme_void() +
+      coord_fixed() 
+    plot
+    
+ggplot(df, aes(x=x, y=y) ) +
+  stat_density_2d(aes(fill = ..density..), geom = "raster", contour = FALSE)
+    
+#plot_gg(plot, width = 4, height = 4, scale = 300, multicore = TRUE)
+```
+
+```{r}
+library(rayshader)
+library(ggplot2)
+library(tidyverse)
+
+gg = ggplot(diamonds, aes(x, depth)) +
+  stat_density_2d(aes(fill = stat(nlevel)), 
+                  geom = "polygon",
+                  n = 100,bins = 10,contour = TRUE) +
+  facet_wrap(clarity~.) +
+  scale_fill_viridis_c(option = "A")
+plot_gg(gg,multicore=TRUE,width=5,height=5,scale=250)
+```
+
+```{r, eval = FALSE}
 gutenberg_works <- gutenberg_works(languages = "en", only_text = TRUE) %>%
   select(title, gutenberg_id) %>%
   drop_na()
@@ -273,12 +327,11 @@ text_num <- gutenberg_works %>%
 ```
 
 
-```{r}
+```{r pinwheel, eval = FALSE}
 # https://chichacha.netlify.app/2019/01/29/playing-around-with-phyllotactic-spirals/
 
 library(magick) ## I'm now a magick fan!!! 
 library(scales) ## Handy when it comes to scaling, but I also love show_col function
-library(patchwork) ## put ggplot side by side easily :) 
 
 ## Let's just set some of my favourite number.
 phi <- (1 + sqrt(5)) / 2 
@@ -318,7 +371,7 @@ create_art <- function(n=1800,u=5,v=0,angle=golden_angle,colors="#ffffff",...){
     expand_limits(x=c(-max_r,max_r),y=c(-max_r,max_r)) 
     
   my_art + annotate(geom="text", x=Inf,y=-Inf,
-                    label=str_glue('n: {n} | u: {u} | v: {v} | angle: {round(angle,3)} radian'),
+                    label=title,
                     family="Roboto Condensed", color="#ffffffae",
                     hjust=1,vjust=-1)
 }
@@ -326,8 +379,70 @@ create_art <- function(n=1800,u=5,v=0,angle=golden_angle,colors="#ffffff",...){
 create_art(n = 360,u = 2) 
 ```
 
+```{r swirly}
+library(grDevices)
+library(grid) 
 
-```{r}
+# credit: https://jean.fan/art-with-code/portfolio/20180721_tunnel/
+
+senti_swirl <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n)
+
+colors_swirl <- colors_final %>%
+  slice_head(n = 3)
+
+# Gradient Colors
+vp <- viewport(x = 0, y = 0, width = 1, height = 1)
+grid.show.viewport(vp)
+
+colors <- colorRampPalette(c(colors_swirl$Hex))(500)
+
+pushViewport(viewport(width = 1, height = 1, angle = 0))
+grid.rect(gp = gpar(col = NA, fill = colors[1]))
+
+for(i in 2:500){
+  pushViewport(viewport(width = 0.99, height = 0.99, angle = senti_swirl))
+  grid.rect(gp = gpar(col = NA, fill = colors[i])
+  )
+}
+
+# Repeating Colors
+vp <- viewport(x = 0, y = 0, width = 1, height = 1)
+grid.show.viewport(vp)
+
+colors_swirl <- colors_final %>%
+  slice_head(n = 3)
+
+colors <- rep(colorRampPalette(c(colors_swirl$Hex))(100), round(senti_pos) + 1)
+
+pushViewport(viewport(width = 1, height = 1, angle = 0))
+grid.rect(gp = gpar(col = NA, fill = colors[1]))
+
+for(i in 2:500){
+  pushViewport(viewport(width = 0.99, height = 0.99, angle = senti_swirl))
+  grid.rect(gp = gpar(col = NA, fill = colors[i])
+  )
+}
+
+# All Colors
+vp <- viewport(x = 0, y = 0, width = 1, height = 1)
+grid.show.viewport(vp)
+
+colors_swirl <- colors_final %>%
+  slice_head(n = 3)
+
+colors <- rep(colorRampPalette(c(colors_final$Hex))(100), round(senti_pos) + 1)
+
+pushViewport(viewport(width = 1, height = 1, angle = 0))
+grid.rect(gp = gpar(col = NA, fill = colors[1]))
+
+for(i in 2:500){
+  pushViewport(viewport(width = 0.99, height = 0.99, angle = senti_swirl))
+  grid.rect(gp = gpar(col = NA, fill = colors[i])
+  )
+}
+```
+
+```{r, eval = FALSE}
 # trying to make something that works vaguely like: https://datatricks.co.uk/the-hidden-art-in-pi
 
 # Unsorted affinity, so the book from start to finish
@@ -377,8 +492,7 @@ ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord)) +
 
 ```
 
-
-```{r}
+```{r, eval = FALSE}
 # Using proportions of words -- randomly sampled
 text_afinn_simp <- text_afinn %>%
   mutate(value = case_when(value == 1 ~ 1,
@@ -508,7 +622,7 @@ ggplot(feathers, aes(x = x_coord, y = y_coord, color = "red")) +
 
 ```
 
-```{r}
+```{r, eval = FALSE}
 text <- gutenberg_download(36) %>%
   mutate(text = str_to_lower(text, locale = "en"))
 
@@ -527,7 +641,7 @@ sentiment <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n)
 sentiment
 ```
 
-```{r}
+```{r, eval = FALSE}
 feathers_many <- bind_rows(replicate(100, 
                     sample_n(book_coords_7deg_prop, 10000, replace = TRUE, weight = prob) %>%
   mutate(color_val = row_number()) %>%
@@ -551,7 +665,7 @@ ggplot(feathers_many, aes(x = x_coord, y = y_coord)) +
   geom_point(alpha = 0.01)
 ```
 
-```{r}
+```{r, eval = FALSE}
 
 # Not my code go to: https://jean.fan/art-with-code/portfolio/20180720_mondrian/
 
@@ -628,7 +742,7 @@ par(mfrow=c(1,1), mar=rep(1,4))
 composition(fixedLines=TRUE, seed=NA)
 ```
 
-```{r}
+```{r, eval = FALSE}
 # https://jean.fan/art-with-code/portfolio/20180721_tunnel/
 
 library(grid) 

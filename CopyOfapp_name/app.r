@@ -8,37 +8,15 @@ library(rvest)
 library(httr)
 require(cowplot)
 
-url <- "https://en.wikipedia.org/wiki/List_of_colors:_A%E2%80%93F"
-tables <- url %>%
-  read_html() %>%
-  html_nodes(css = "table")
-colors1 <- html_table(tables[[1]], fill = TRUE)
+colors <- tibble(Name = "White,Yellow,Blue,Red,Green,Black,Brown,Azure,Ivory,Teal,Silver,Purple,Navy,Gray,Orange,Maroon,Charcoal,Aquamarine,Coral,Fuchsia,Wheat,Lime,Grey,Crimson,Khaki,Pink,Magenta,Olden,Plum,Olive,Cyan")
 
-url <- "https://en.wikipedia.org/wiki/List_of_colors:_G%E2%80%93M"
-tables <- url %>%
-  read_html() %>%
-  html_nodes(css = "table")
-colors2 <- html_table(tables[[1]], fill = TRUE)
-
-url <- "https://en.wikipedia.org/wiki/List_of_colors:_N%E2%80%93Z"
-tables <- url %>%
-  read_html() %>%
-  html_nodes(css = "table")
-colors3 <- html_table(tables[[1]], fill = TRUE)
-
-colors_scrape <- rbind(colors1, colors2, colors3) %>%
-  mutate(Name = str_to_lower(Name, locale = "en"),
-         Name = str_replace(Name, " \\s*\\([^\\)]+\\)", "")) %>%
-  distinct(Name, .keep_all = TRUE)
+colors <- colors %>%
+  mutate(Name = str_to_lower(Name, locale = "en"))
 
 colors <- colors_scrape %>%
   select(Name) 
 
-colors_all <- colors %>%
-  summarise(Name = paste0(Name, collapse = "|")) %>%
-  as.character(expression())
-
-colors_all <- paste0("\\b(", colors_all, ")\\b")
+colors_all <- paste0("\\b(", colors, ")\\b")
 
 gutenberg_works <- gutenberg_works(languages = "en", only_text = TRUE) %>%
   select(title, gutenberg_id) %>%
@@ -68,12 +46,13 @@ ui <- fluidPage(
 
 server <- function(input, output){
   
-guty_react <- reactive({
 
-text_num <- gutenberg_works %>%
-  filter(title == input$selected_work) %>% 
-  select(gutenberg_id)
+output$art <- renderPlot({ 
+  text_num <- gutenberg_works %>%
+    filter(title == input$selected_work) %>% 
+    select(gutenberg_id)
   
+  observe()
   text <- gutenberg_download(text_num) %>%
     mutate(text = str_to_lower(text, locale = "en"))
   
@@ -84,7 +63,7 @@ text_num <- gutenberg_works %>%
     count(word, sort = TRUE) %>%
     inner_join(afinn, by = "word") %>% 
     mutate(prob = n/sum(n)) %>%
-    arrange(desc(n)) 
+    arrange(desc(n))
   
   text_neg <- text_afinn %>%
     filter(value < 0) %>%
@@ -93,7 +72,7 @@ text_num <- gutenberg_works %>%
   text_pos <- text_afinn %>%
     filter(value > 0) %>%
     arrange(desc(n))
-
+  
   senti_raw <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) * 10000
   
   senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
@@ -122,36 +101,35 @@ text_num <- gutenberg_works %>%
   
   colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
     select(Name, `Hex(RGB)`, n, prob) %>%
-    rename(Hex = `Hex(RGB)`) 
+    rename(Hex = `Hex(RGB)`)
   
-  color_background <- colors_final[2, 2]
-  color_background <- color_background %>%
-    as.character(expression())
+  color_main <- colors_final %>%
+    filter(row_number() == 1) %>%
+    select(Hex) %>%
+    as.character()
   
-  color_main <- colors_final[1, 2]
-  color_main <- color_main %>%
-    as.character(expression())
+  color_background <- colors_final %>%
+    filter(row_number() == 2) %>%
+    select(Hex) %>%
+    as.character()
   
   formula <- list(
     x = quote(runif(1, -1, 1) * x_i^2 - senti_neg * sin(y_i^2)),
     y = quote(runif(1, -1, 1) * y_i^2 - senti_pos * cos(x_i^2))
   )
   
-  df <- seq(from = -pi, to = pi, by = 0.01) %>%
+  dat <- seq(from = -pi, to = pi, by = 0.01) %>%
     expand.grid(x_i = ., y_i = .) %>%
     mutate(!!!formula)
- 
- title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
-    select(word)
- 
- title <- title %>%
-   summarise(word = paste0(word, collapse = " ")) %>%
-   as.character(expression())
   
-  })
-
-output$art <- renderPlot({ 
-  ggplot(df, aes(x = x, y = y)) +
+  title <- sample_n(text_afinn, 3, replace = TRUE, weight = prob) %>%
+    select(word)
+  
+  title <- title %>%
+    summarise(word = paste0(word, collapse = " ")) %>%
+    as.character(expression())
+  
+  ggplot(dat, aes(x = x, y = y)) +
                                geom_point(alpha = 0.1, size = 0, shape = 20, color = color_main) +
                                theme_void() +
                                coord_fixed() +
