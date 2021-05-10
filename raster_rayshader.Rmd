@@ -114,6 +114,7 @@ nrc_count <- text_stopped %>%
   filter(sentiment != "positive") %>%
   filter(sentiment != "negative")
 
+#the strongest sentiment in this text is anticipation!
 
 ```
 
@@ -162,21 +163,12 @@ convolution_indexes <- function(r, n){
   crossing(x = -r:r, y = -r:r) %>% 
     mutate(M = ((x != 0) | (y != 0)) * 1 ,
            N = (abs(x) + abs(y) <= r) * M,
-           Mr = ((abs(x) == r) | (abs(y) == r)) * M,
-           Nr = (abs(x) + abs(y) == r) * M,
            Cr = ((x == 0) | (y == 0)) * M,
            S1 = (((x > 0) & (y > 0))|((x < 0) & (y < 0))) * 1,
            Bl = (abs(x) == abs(y)) * M,
            D1 = (abs(x) > abs(y)) * M,
-           D2 = ((abs(x) == abs(y)) | abs(x) == r) * M,
-           C2 = M - N,
            Z = ((abs(y) == r) | (x == y)) * M,
-           t = ((y == r) | (x == 0)) * M,
-           U = ((abs(x) == r) | (y == -r)) * M,
-           H = (abs(x) == r | y == 0) * M,
-           TM = ((abs(x) == abs(y)) | abs(x) == r | abs(y) == r) * M,
-           S2 = ((y==0) | ((x == r) & (y > 0)) |((x == -r) & (y < 0))) * M,
-           M2 = ((abs(x) == r) | (abs(x) == abs(y) & y > 0)) * M) %>% 
+           TM = ((abs(x) == abs(y)) | abs(x) == r | abs(y) == r) * M) %>% 
     dplyr::select(x, y, matches(n)) %>% 
     filter_at(3, all_vars(. > 0)) %>% 
     dplyr::select(x,y)
@@ -188,7 +180,7 @@ convolution_indexes <- function(r, n){
 #create dataframe
 
 range <- 3 #depth of the neighborhood 
-thresold <- 3 #cell limit
+threshold <- 3 #cell limit
 states <- 10 #maximum number of states allowed (algorithm M) 
 neighborhood <- "N" #pattern of neighboring cells
 iter <- 171 #number of iterations
@@ -203,7 +195,7 @@ X <- initial_grid(s = states,
 L <- convolution_indexes(r = range, n = neighborhood)
   
 for (i in 1:iter){
-    X <- iterate_cyclic(X, L, states, thresold)  
+    X <- iterate_cyclic(X, L, states, threshold)  
 }
 
 df <- melt(X)
