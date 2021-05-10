@@ -5,14 +5,22 @@
       "title": "Reed Math 241",
       "author": [],
       "contents": "\n\n          \n      \n      \n      \n      Math 241 Blog\n      \n      \n      Home\n      About\n      ☰\n      \n      \n      \n        \n          \n            Reed Math 241\n          \n          \n            \n              This is the blog of the Reed Math 241 Data Science class. In this class, the students learn to explore, wrangle, visualize, and summarize data to tell stories with data.\n            \n            \n              This is the blog of the Reed Math 241 Data Science class. In this class, the students learn to explore, wrangle, visualize, and summarize data to tell stories with data.\n            \n          \n\n          \n            \n              \n          \n\n          \n            \n              \n                              \n            \n          \n        \n      \n    \n\n    \n    \n    ",
+<<<<<<< HEAD
       "last_modified": "2021-05-10T14:21:12-07:00"
+=======
+      "last_modified": "2021-05-10T12:48:49-07:00"
+>>>>>>> 47032731e0d3aef28b7ba721ff28f1b4ec901469
     },
     {
       "path": "index.html",
       "title": "Math 241 Blog",
       "author": [],
       "contents": "\n\n\n\n",
+<<<<<<< HEAD
       "last_modified": "2021-05-10T14:21:13-07:00"
+=======
+      "last_modified": "2021-05-10T12:48:50-07:00"
+>>>>>>> 47032731e0d3aef28b7ba721ff28f1b4ec901469
     }
   ],
   "collections": ["posts/posts.json"]
