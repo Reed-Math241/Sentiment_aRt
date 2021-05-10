@@ -27,8 +27,11 @@ library(dplyr)
 library(gutenbergr)
 library(rgl)
 library("plot3Drgl")
-library(webshot2)
 library(rayrender)
+library(devtools)
+library(textdata)
+library(distill)
+library(RcppArmadillo)
 
 #cellular automata
 library(tidyverse)
@@ -233,9 +236,7 @@ ggobj
 ```{r}
 #rayshader
 
-plot_gg(ggobj)
-Sys.sleep(0.2)
-render_camera()
+plot_gg(ggobj, solid = TRUE)
 
 
 ```
