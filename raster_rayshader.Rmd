@@ -92,7 +92,7 @@ text_num <- 11 #alice's adventure in wonderland
 text <- gutenberg_download(text_num) %>%
   mutate(text = str_to_lower(text, locale = "en"))
 
-afinn <- get_sentiments("afinn")
+nrc <- get_sentiments("nrc")
 data("stop_words")
 
 text_stopped <- text %>%
@@ -100,26 +100,20 @@ text_stopped <- text %>%
   count(word, sort = TRUE) %>%
   anti_join(stop_words, by = "word") 
 
-text_afinn <- text_stopped %>%
-  inner_join(afinn, by = "word") %>% 
+text_nrc <- text_stopped %>%
+  inner_join(nrc, by = "word") %>% 
   mutate(prop = n/sum(n)) %>%
   arrange(desc(n))
 
-text_neg <- text_afinn %>%
-  filter(value < 0) %>%
-  arrange(desc(n))
+nrc_count <- text_stopped %>%
+  inner_join(nrc, by = "word") %>%
+  group_by(sentiment) %>%
+  mutate(n = sum(n)) %>%
+  dplyr::select(!word) %>%
+  unique() %>%
+  filter(sentiment != "positive") %>%
+  filter(sentiment != "negative")
 
-text_pos <- text_afinn %>%
-  filter(value > 0) %>%
-  arrange(desc(n))
-
-senti <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) * 10000
-
-senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
-
-senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
-
-senti <- abs(round(senti))
 
 ```
 
