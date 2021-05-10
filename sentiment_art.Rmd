@@ -443,9 +443,36 @@ for(i in 2:500){
 ```
 
 ```{r, eval = FALSE}
+library(magick)
+
+imgs_1 <- image_graph(width=600, height=600)
+params <- tibble(polar=TRUE)
+params %>% pwalk(.,~generative_art() %>% print())
+dev.off()
+
+# imgs_1 <- image_graph(width=600, height=600)
+# params <- tibble(polar=TRUE)
+# params %>% pmap(.,generative_art)
+# dev.off()
+
+image_animate(imgs_1,fps=10)
+```
+
+```{r, eval = FALSE, fig.width = 7, fig.height = 8}
 # trying to make something that works vaguely like: https://datatricks.co.uk/the-hidden-art-in-pi
 
+# use these: 33, 215
+
 # Unsorted affinity, so the book from start to finish
+
+sentiment_snake <- function(text_num){
+  text <- gutenberg_download(text_num) %>%
+  mutate(text = str_to_lower(text, locale = "en"))
+
+plot_title <- gutenberg_works(gutenberg_id == text_num) %>%
+  select(title) %>%
+  as.character()
+
 text_afinn_unsort <- text %>%
   unnest_tokens(output = word, input = text, token = "words") %>%
   inner_join(afinn, by = "word") 
@@ -479,17 +506,49 @@ book_coords_7deg <- text_unsort_simp %>%
                              value == -3 ~ -.9)),
          color_val = row_number())
 
-ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord)) +
-    geom_path() +
-  geom_point(size = .1) +
-#  scale_color_continuous(high = "dark red", low = "white") +
-  theme(line = element_blank(),
-        text = element_blank(),
-        title = element_blank(),
-        panel.background = element_rect(fill = color_background,
-                                colour = color_background,
-                                size = 0.5, linetype = "solid"))
+df <- tibble(x = 0, y = 0)
 
+ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord)) +
+  geom_path(color = "white") +
+  geom_point(data = df, mapping = aes(x = x, y = y, color = "red")) +
+  ggtitle(plot_title) +
+  theme(plot.title = element_text(hjust = 0.5, 
+                                  family = "Minerva Modern", 
+                                  size = 10, 
+                                  color = "#36454f"),
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "#36454f",
+                                colour = "#36454f",
+                                size = 0.5, linetype = "solid"))
+}
+
+library(patchwork)
+
+sentiment_snake(215) +
+  sentiment_snake(33) + 
+  sentiment_snake(345) + 
+  sentiment_snake(12) + 
+  sentiment_snake(68) + 
+  sentiment_snake(132) + 
+  sentiment_snake(403) + 
+  sentiment_snake(514) + 
+  sentiment_snake(28) +
+  sentiment_snake(36) + 
+  sentiment_snake(61) + 
+  sentiment_snake(78) + 
+  sentiment_snake(113) + 
+  sentiment_snake(120) + 
+  sentiment_snake(139) + 
+  sentiment_snake(140) + 
+  plot_layout(ncol = 4)
 ```
 
 ```{r, eval = FALSE}
