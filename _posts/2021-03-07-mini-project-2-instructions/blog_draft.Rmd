@@ -41,7 +41,7 @@ text_afinn <- text %>%
          impact = abs(n * value)) %>%
   arrange(desc(impact)) 
 
-sentiment <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n)
+sentiment <- sum(text_afinn[["n"]]*text_afinn[["value"]])/sum(text_afinn[["n"]])
 
 sentiment
 ```
@@ -79,11 +79,11 @@ text_pos <- text_afinn %>%
 After we calculate individual sentiments, we sum negative, positive, and all values divided by the number of words counted to obtain three different sentiment scores which will be applicable later. These three scores tell us three things, how negative the negative elements of the text are, how positive the positive elements of the text are, and how positive or negative it is overall. The last step here multiplies the sentiment score by 10000, rounds it to the nearest whole number, and takes the absolute value as to only output positive values. This may seem odd, but this value will be used to set the "seed" for future plots where randomization is used so that our art is reproducible, and R only uses seeds between 1 and 10000.
 
 ```{r, Sentiment Scores}
-senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
+senti_neg <- sum(text_neg[["n"]]*text_neg[["value"]])/sum(text_neg[["n"]])
 
-senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
+senti_pos <- sum(text_pos[["n"]]*text_pos[["value"]])/sum(text_pos[["n"]])
 
-senti_raw <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) 
+senti_raw <- sum(text_afinn[["n"]]*text_afinn[["value"]])/sum(text_afinn[["n"]])
 
 senti <- abs(round(senti_raw * 10000))
 ```
@@ -264,11 +264,11 @@ text_pos <- text_afinn %>%
   filter(value > 0) %>%
   arrange(desc(n))
 
-senti_neg <- sum(text_neg$n*text_neg$value)/sum(text_neg$n)
+senti_neg <- sum(text_neg[["n"]]*text_neg[["value"]])/sum(text_neg[["n"]])
 
-senti_pos <- sum(text_pos$n*text_pos$value)/sum(text_pos$n)
+senti_pos <- sum(text_pos[["n"]]*text_pos[["value"]])/sum(text_pos[["n"]])
 
-senti_raw <- sum(text_afinn$n*text_afinn$value)/sum(text_afinn$n) 
+senti_raw <- sum(text_afinn[["n"]]*text_afinn[["value"]])/sum(text_afinn[["n"]])
 
 text_grammed <- text %>%
   unnest_tokens(output = word, input = text,
@@ -298,13 +298,14 @@ library(grid)
 # credit: https://jean.fan/art-with-code/portfolio/20180721_tunnel/
 
 colors_swirl <- colors_final %>%
-  slice_head(n = 3)
+  slice_head(n = 3) %>%
+  select(Hex)
 
 # Gradient Colors
 vp <- viewport(x = 0, y = 0, width = 1, height = 1)
 grid.show.viewport(vp)
 
-colors <- colorRampPalette(c(colors_swirl$Hex))(500)
+colors <- colorRampPalette(c(colors_swirl))(500)
 
 pushViewport(viewport(width = 1, height = 1, angle = 0))
 
@@ -322,9 +323,10 @@ vp <- viewport(x = 0, y = 0, width = 1, height = 1)
 grid.show.viewport(vp)
 
 colors_swirl <- colors_final %>%
-  slice_head(n = 3)
+  slice_head(n = 3) %>%
+  select(Hex)
 
-colors <- rep(colorRampPalette(c(colors_swirl$Hex))(100), round(senti_pos) + 1)
+colors <- rep(colorRampPalette(c(colors_swirl))(100), round(senti_pos) + 1)
 
 pushViewport(viewport(width = 1, height = 1, angle = 0))
 
