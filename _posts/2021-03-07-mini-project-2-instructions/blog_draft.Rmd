@@ -439,3 +439,45 @@ Let's look at just one example, Call of the Wild, in closer detail so you can be
 sentiment_snake(215)
 ```
 
+Our last art generation takes our data art to the next level. The `rayshader` package contains a `save_3Dprint` function that can turn 3D models into printable files. This function gives us the potential to turn our data art into a physical object. We generate art for the rayshader models using cellular automata. Cellular automata are a complex mathematical concept that even we cannot fully explain despite having worked with cellular automata to generate this art. Wikipedia defines a cellular automaton as “a discrete model of computation.” Probably a more helpful explanation can be found in youtube videos and tutorials. From our own research we’ve come to understand a cellular automaton as a collection of cells in a grid. The simplest version of a cellular automaton has 2 states, on and off which are indicated by black and white, respectively. A cell that is turned on has the power to decide the state of surrounding cells depending on a neighborhood which is specified in the creation of the automaton. When talking about cellular automata, neighborhoods are certain patterns of cells that are created by mathematical functions. Different neighborhoods give an automaton different visual behaviors. A blog post by Antonio Sánchez Chinchón lists all of the parameters required to produce a cellular automaton in R and also, provides the code that helped us create our art. 
+
+
+
+We start with the same first steps at the previous art generation experiments. After loading all of the necessary libraries, we perform sentiment analysis to help decide our automaton parameters. In this case, we used the `nrc` lexicon in the `get_sentiments` function instead of the `afinn` lexicon. While the afinn lexicon performs a numerical sentiment analysis, the nrc lexicon performs analysis by categorizing words into one of 8 sentiments. We can later use the top sentiment of a text to decide the neighborhood of our automaton. In the next steps we join the Wikipedia color table  with the ngram data frame of the selected text. In this example, we look at Alice's Adventure in Wonderland.
+
+
+
+We finally start building our cellular automaton. We pull Antonio Chinchón’s C++ functions from his github to get started. Feeding this code into R is easy. Simply create a new C++ file in R and paste the code from github. Save the C++ file and return to your R project file. Use the `sourceCpp()` function to feed the C++ code into your R code. Voila! These functions are performing mathematical tasks to ensure the proper operation of our cellular automaton. Honestly, as R coders, the details of these functions purposes are a mystery to us. We only know as much as the code comments tell us. Moving on...
+
+
+
+Next, we pull code for two more functions from Antonio Chinchón’s github. The `initial_grid` function does exactly what the name suggests: create the initial grid for the automaton. Not much creativity is involved in the grid creation, so we leave this code as is from the github. The `convolution_indexes` function creates neighborhoods to give our automatons. While this code requires creativity, it also requires an understanding of complex mathematical concepts. After extensive research of cellular automata neighborhoods, we chose 8 neighborhood formulas from the original github function based on how well we thought the patterns represented each `nrc` sentiment (a very scientific and objective process). Now, we have written all of the necessary functions to create our own cellular automata. 
+
+
+
+We have to create a data frame before we can plot our cellular automaton. We provide the automaton with all of the parameters that  Antonio Chinchón’s blog post specifies. To more thoroughly explain each parameter: 
+
+#add bullet points here!
+`range` tells the automaton how far each neighborhood extends from a cell.
+`threshold` tells the automaton how many different states a cell can reach before the automaton moves on to another cell.
+`states` tells the automaton how many different varieties of cells or how many different colors can exist in the plot.
+We have already discussed the role of the `neighborhood` in creating the automaton. 
+`iter`, and abbreviation of iteration, tell the automaton how many times the it should run through the model.
+Finally, the `width` and `height` decide the dimensions of your final plot.
+
+These parameters cannot be given a random set of numbers and be expected to generate an interesting visual pattern. Most number combinations produce what can only be described as color static. Jason of softologyblog provides some number combinations to begin with when trying to produce interesting visuals with cellular automata. We started with combinations that allowed a large number of cell states, because we wanted to include at least the top ten colors mentioned in a text. Plus, more color makes our art pieces more interesting. 
+
+Object `X` creates the automaton’s grid. Object `L` runs the automaton using a for loop. The larger the specified width and height of your plot, the longer the for loop will take to run. Antonio Chinchón’s github example of an automaton had a width and height of 1500 and took upwards of five minutes to run the for loop. For the sake of experimentation, we kept our dimensions relatively small. Larger dimensions would create higher quality, less pixelated automaton images by including more cells and much smaller cells. 
+
+The `melt` function turns the output of the for loop into a tidy data frame with every row as an observation. 
+
+
+
+Use the data frame to plot the automaton with the `geom_raster` function. Within the `geom_raster` function, `interpolate = TRUE` smoothens out the plot image, and the `theme_nothing` function creates an output with the appearance of an image instead of a graph. Once we produced an output that we were happy with, we turned the plot into a `ggobject`. This object gets put into the rayshader `plot_gg` function. The `rayshader` models can only be viewed on a local installation of R. An R studio server will not be able to produce the rgl device window which is necessary to view 3D models. If using a Mac, make sure to download and open XQuartz before running the `rayshader` code. Macs will not be able to open an rgl device window without XQuartz. Once you have adjusted the `rayshader` code to produce a model of your liking, use the `save_3Dprint` function to produce a file that you can take to your local 3D printer, wherever that may be. 
+
+Time permitting, we would have loved to take this project a step further in terms of reproducibility.We believe that a function that automates the creation of a text data cellular automaton is a time-consuming but worthwhile project for the future. In our vision, the function requires a single input: a gutenbergr text number. The function would perform the same `nrc` text analysis we already wrote to identify the given text’s strongest sentiment. The function would then choose the neighborhood that we would have liked to match to the identified popular sentiment. Finally, the function would choose the cellular automaton’s 10 colors using the color and text code we’ve already written. There would be two outputs: the data frame and the `rayshader` plot. In this imagined function, the number of `range`, `states`, and `threshold` would always stay the same. The iterations, `width`, and `height` would be optional, adjustable inputs for the function. Ultimately, we would be able to produce unique art pieces with one line of code, and we would be able to make a physical copy with just one more line. 
+All we would need is two lines of code to become an artist! Imagine that...
+
+
+
+
