@@ -1,0 +1,13 @@
+name: ShinySnake
+title: ShinySnake
+username:
+account: maxvanlan
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4106792
+bundleId: 4583744
+url: https://maxvanlan.shinyapps.io/ShinySnake/
+when: 1620696033.62962
+lastSyncTime: 1620696033.62965
+asMultiple: FALSE
+asStatic: FALSE

@@ -149,7 +149,9 @@ colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
   rename(Hex = `Hex(RGB)`) 
 ```
 
-The first art generation tool we created was inspired by the ['generativeart' library] (https://github.com/cutterkom/generativeart). This works by using random number generation --based on the sentiment score of the book-- and the positive and negative sentiment values calculated previously. So, each artwork produced with this method is unique and dependent on a specific text’s sentiment. This means that texts with more extreme sentiments tend to yield more varied results. If you dig into the formula in the code below, you can see that a sine and cosine function are being multiplied by ‘senti_neg’ and ‘senti_pos’ respectively. So, a larger value for either ‘senti_neg’ or ‘senti_pos’ will make their corresponding function more extreme. We made [this graph] (https://www.desmos.com/calculator/zbvdvoyfcn) on desmos as it provides a more intuitive explanation of this interaction. For this piece, we also wanted the colors and titles to be rooted in the text data. The artpiece’s colors are simply the two most common colors to appear in the text. The artpiece’s title is a random sample of three words from the sentiment analysis which are selected based on a word’s  proportion of appearance in the text, so words that appear more often are more likely to appear in the title. The lovely generated title for this next piece is "Grand Commit Fan." For aesthetic reasons we chose to not include the title on our output, though this is toggleable through the function ‘generative_art’ with 'title = TRUE'. 'title = TRUE' will put the generated title in the bottom right corner.
+## Randomly GenRating Art
+
+The first art generation tool we created was inspired by the ['generativeart' library](https://github.com/cutterkom/generativeart). This works by using random number generation --based on the sentiment score of the book-- and the positive and negative sentiment values calculated previously. So, each artwork produced with this method is unique and dependent on a specific text’s sentiment. This means that texts with more extreme sentiments tend to yield more varied results. If you dig into the formula in the code below, you can see that a sine and cosine function are being multiplied by ‘senti_neg’ and ‘senti_pos’ respectively. So, a larger value for either ‘senti_neg’ or ‘senti_pos’ will make their corresponding function more extreme. We made [this graph](https://www.desmos.com/calculator/zbvdvoyfcn) on desmos as it provides a more intuitive explanation of this interaction. For this piece, we also wanted the colors and titles to be rooted in the text data. The artpiece’s colors are simply the two most common colors to appear in the text. The artpiece’s title is a random sample of three words from the sentiment analysis which are selected based on a word’s  proportion of appearance in the text, so words that appear more often are more likely to appear in the title. The lovely generated title for this next piece is "Grand Commit Fan." For aesthetic reasons we chose to not include the title on our output, though this is toggleable through the function ‘generative_art’ with 'title = TRUE'. 'title = TRUE' will put the generated title in the bottom right corner.
 
 ```{r, Polar Generative Art, code_folding = TRUE, preview = TRUE}
 my_formula <- list(
@@ -240,7 +242,9 @@ An observant reader might note that the code we used can create art based on pol
 generative_art(polar = FALSE, title = FALSE)
 ```
 
-Our next attempt at data art is based off of [Jean Fan's tunnel art] (https://jean.fan/art-with-code/portfolio/20180721_tunnel/). This plot does not use randomization like the ones above. Instead, it takes a series of rectangles which  incrementally "push back” and rotate to create a spiral shape. The rotation angle is based upon the raw sentiment score of the text and again, the colors used are pulled from the text. We're working with a different text than the previous pieces, so we'll need to re-run most of our previous code. This time we're working with "The Scarlett Letter" to hopefully get some striking colors. The only difference between these two swirling art pieces is how often the colors repeat. The first has no repetition, while the second has repetition based on the positive sentiment of the piece --the more positive, the more repetition that occurs.
+## Tunnel aRt
+
+Our next attempt at data art is based off of [Jean Fan's tunnel art](https://jean.fan/art-with-code/portfolio/20180721_tunnel/). This plot does not use randomization like the ones above. Instead, it takes a series of rectangles which  incrementally "push back” and rotate to create a spiral shape. The rotation angle is based upon the raw sentiment score of the text and again, the colors used are pulled from the text. We're working with a different text than the previous pieces, so we'll need to re-run most of our previous code. This time we're working with "The Scarlett Letter" to hopefully get some striking colors. The only difference between these two swirling art pieces is how often the colors repeat. The first has no repetition, while the second has repetition based on the positive sentiment of the piece --the more positive, the more repetition that occurs.
 
 ```{r Swirly Art Setup, code_folding = TRUE}
 text_num <- 33
@@ -292,7 +296,7 @@ colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
   rename(Hex = `Hex(RGB)`) 
 ```
 
-```{r Swirly Art}
+```{r Swirly Art, code_folding = TRUE, fig.align = 'center'}
 library(grDevices)
 library(grid) 
 
@@ -316,7 +320,7 @@ for(i in 2:500){
 }
 ```
 
-```{r Swirly Art Repeating}
+```{r Swirly Art Repeating, code_folding = TRUE, fig.align = 'center'}
 vp <- viewport(x = 0, y = 0, width = 1, height = 1)
 grid.show.viewport(vp)
 
@@ -336,9 +340,81 @@ for(i in 2:500){
 }
 ```
 
-Our next attempt at art was a little more straightforward. In the following 16 plots, we plotted every word with a sentiment from the beginning of the text to the end, in order. Starting at the origin (marked with a red dot), a line of length 1 is drawn in the direction corresponding to the sentiment of the word. A line to the left means a negative sentiment. A line to the right means a positive sentiment. The more the line angles down, the stronger the sentiment. For example, a word with the sentiment of +1 would draw a line up and to the right. A word with the sentiment of -5 would draw a line down and to the left. This not only produces visually interesting art, but also helps to convey a story that might otherwise be lost with a typical graph, namely seeing how a text becomes positive or negative over its duration. The general idea for this piece was based on [Nadieh Bremer’s visualizations] (https://www.visualcinnamon.com/2015/01/exploring-art-hidden-in-pi/) of pi.
+Lastly for the tunnel art, I just could not help myself but to show you the piece made from Alice's Adventures in Wonderland --the rabbit hole parallels were just too tempting.  
 
-```{r Sentiment Snake Setup, code_folding = TRUE, fig.width = 7, fig.height = 8}
+```{r Swirly Alice in Wonderland, code_folding = TRUE, fig.align = 'center'}
+text_num <- 11
+
+text <- gutenberg_download(text_num) %>%
+  mutate(text = str_to_lower(text, locale = "en"))
+
+afinn <- get_sentiments("afinn")
+
+text_afinn <- text %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  count(word, sort = TRUE) %>%
+  inner_join(afinn, by = "word") %>% 
+  mutate(prob = n/sum(n)) %>%
+  arrange(desc(n)) 
+
+text_neg <- text_afinn %>%
+  filter(value < 0) %>%
+  arrange(desc(n))
+
+text_pos <- text_afinn %>%
+  filter(value > 0) %>%
+  arrange(desc(n))
+
+senti_neg <- sum(text_neg[["n"]]*text_neg[["value"]])/sum(text_neg[["n"]])
+
+senti_pos <- sum(text_pos[["n"]]*text_pos[["value"]])/sum(text_pos[["n"]])
+
+senti_raw <- sum(text_afinn[["n"]]*text_afinn[["value"]])/sum(text_afinn[["n"]])
+
+text_grammed <- text %>%
+  unnest_tokens(output = word, input = text,
+  token = "ngrams", n = 3)
+
+colors_parsed <- text_grammed %>%
+  mutate(Name = str_extract(word, pattern = colors_all)) %>%
+  drop_na() %>%
+  select(Name)
+
+colors_counted <- colors_parsed %>%
+  group_by(Name) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(prob = n/sum(n)) %>%
+  arrange(desc(n))
+  
+colors_final <- left_join(colors_counted, colors_scrape, by = "Name") %>%
+  select(Name, `Hex(RGB)`, n, prob) %>%
+  rename(Hex = `Hex(RGB)`) 
+
+vp <- viewport(x = 0, y = 0, width = 1, height = 1)
+grid.show.viewport(vp)
+
+colors_swirl <- colors_final %>%
+  slice_head(n = 5)
+
+colors <- rep(colorRampPalette(c(colors_swirl$Hex))(100), round(senti_pos) + 1)
+
+pushViewport(viewport(width = 1, height = 1, angle = 0))
+
+grid.rect(gp = gpar(col = NA, fill = colors[1]))
+
+for(i in 2:500){
+  pushViewport(viewport(width = 0.99, height = 0.99, angle = 10*senti_raw))
+  grid.rect(gp = gpar(col = NA, fill = colors[i])
+  )
+}
+```
+
+## Tracing Sentiment Snakes
+
+Our next attempt at art was a little more straightforward. In the following 16 plots, we plotted every word with a sentiment from the beginning of the text to the end, in order. Starting at the origin (marked with a red dot), a line of length 1 is drawn in the direction corresponding to the sentiment of the word. A line to the left means a negative sentiment. A line to the right means a positive sentiment. The more the line angles down, the stronger the sentiment. For example, a word with the sentiment of +1 would draw a line up and to the right. A word with the sentiment of -5 would draw a line down and to the left. This not only produces visually interesting art, but also helps to convey a story that might otherwise be lost with a typical graph, namely seeing how a text becomes positive or negative over its duration. The general idea for this piece was based on [Nadieh Bremer’s visualizations](https://www.visualcinnamon.com/2015/01/exploring-art-hidden-in-pi/) of pi.
+
+```{r Sentiment Snake Setup, code_folding = TRUE, fig.width = 7, fig.height = 8, fig.align = 'center'}
 # trying to make something that works vaguely like: https://datatricks.co.uk/the-hidden-art-in-pi
 
 sentiment_snake <- function(text_num){
@@ -406,7 +482,7 @@ ggplot(data = book_coords_7deg, mapping = aes(x = x_coord, y = y_coord)) +
 }
 ```
 
-```{r Sentiment Snake Matrix, code_folding = TRUE, fig.width = 7, fig.height = 8}
+```{r Sentiment Snake Matrix, code_folding = TRUE, fig.width = 7, fig.height = 8, fig.align = 'center'}
 library(patchwork)
 
 sentiment_snake(215) +
@@ -433,6 +509,12 @@ Let's look at just one example in closer detail so you can better see exactly wh
 ```{r Call of the Wild, fig.width = 5, fig.height = 5, fig.align = 'center'}
 sentiment_snake(215)
 ```
+
+If you're interested seeing what your favorite text looks as one of these plots we made a handy 'shinyApp', just type in a title or use the drop-down menu. There is a chance that some plots might not work or that you may experience one or two bugs, but this app is most for fun, so we did not test it extensively. 
+
+<iframe src="https://maxvanlan.shinyapps.io/ShinySnake/" class="l-screen-inset shaded" height="500px" width="600px"></iframe>
+
+## 3D Art with 'rayshader'
 
 Our last art generation takes our data art to the next level. The `rayshader` package contains a `save_3Dprint` function that can turn 3D models into printable files. This function gives us the potential to turn our data art into a physical object. We generate art for the rayshader models using cellular automata. Cellular automata are a complex mathematical concept that even we cannot fully explain despite having worked with cellular automata to generate this art. Wikipedia defines a cellular automaton as “a discrete model of computation.” Probably a more helpful explanation can be found in youtube videos and tutorials. From our own research we’ve come to understand a cellular automaton as a collection of cells in a grid. The simplest version of a cellular automaton has 2 states, on and off which are indicated by black and white, respectively. A cell that is turned on has the power to decide the state of surrounding cells depending on a neighborhood which is specified in the creation of the automaton. When talking about cellular automata, neighborhoods are certain patterns of cells that are created by mathematical functions. Different neighborhoods give an automaton different visual behaviors. A blog post by Antonio Sánchez Chinchón lists all of the parameters required to produce a cellular automaton in R and also, provides the code that helped us create our art. 
 
@@ -630,7 +712,7 @@ plot_gg(ggobj, solid = TRUE)
 
 ```
 
-Time permitting, we would have loved to take this project a step further in terms of reproducibility.We believe that a function that automates the creation of a text data cellular automaton is a time-consuming but worthwhile project for the future. In our vision, the function requires a single input: a gutenbergr text number. The function would perform the same `nrc` text analysis we already wrote to identify the given text’s strongest sentiment. The function would then choose the neighborhood that we would have liked to match to the identified popular sentiment. Finally, the function would choose the cellular automaton’s 10 colors using the color and text code we’ve already written. There would be two outputs: the data frame and the `rayshader` plot. In this imagined function, the number of `range`, `states`, and `threshold` would always stay the same. The iterations, `width`, and `height` would be optional, adjustable inputs for the function. Ultimately, we would be able to produce unique art pieces with one line of code, and we would be able to make a physical copy with just one more line. 
+Time permitting, we would have loved to take this project a step further in terms of reproducibility. We believe that a function that automates the creation of a text data cellular automaton is a time-consuming but worthwhile project for the future. In our vision, the function requires a single input: a gutenbergr text number. The function would perform the same `nrc` text analysis we already wrote to identify the given text’s strongest sentiment. The function would then choose the neighborhood that we would have liked to match to the identified popular sentiment. Finally, the function would choose the cellular automaton’s 10 colors using the color and text code we’ve already written. There would be two outputs: the data frame and the `rayshader` plot. In this imagined function, the number of `range`, `states`, and `threshold` would always stay the same. The iterations, `width`, and `height` would be optional, adjustable inputs for the function. Ultimately, we would be able to produce unique art pieces with one line of code, and we would be able to make a physical copy with just one more line. 
 All we would need is two lines of code to become an artist! Imagine that...
 
 

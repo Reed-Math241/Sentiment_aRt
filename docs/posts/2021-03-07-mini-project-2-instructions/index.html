@@ -123,7 +123,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["blog_draft_files/anchor-4.2.2/anchor.min.js","blog_draft_files/bowser-1.9.3/bowser.min.js","blog_draft_files/distill-2.2.21/template.v2.js","blog_draft_files/figure-html5/Call of the Wild-1.png","blog_draft_files/figure-html5/Cellular Automata Graphic-1.png","blog_draft_files/figure-html5/Non-Polar Generative Art-1.png","blog_draft_files/figure-html5/Polar Generative Art-1.png","blog_draft_files/figure-html5/Sentiment Snake Matrix-1.png","blog_draft_files/figure-html5/Swirly Art Repeating-1.png","blog_draft_files/figure-html5/Swirly Art-1.png","blog_draft_files/jquery-1.11.3/jquery.min.js","blog_draft_files/popper-2.6.0/popper.min.js","blog_draft_files/tippy-6.2.7/tippy-bundle.umd.min.js","blog_draft_files/tippy-6.2.7/tippy-light-border.css","blog_draft_files/tippy-6.2.7/tippy.css","blog_draft_files/tippy-6.2.7/tippy.umd.min.js","blog_draft_files/webcomponents-2.0.0/webcomponents.js","data/aschinchon_cellularautomata.cpp","data/mythbusters.csv","genart.png","images/reed-college-griffin-red.png","mini-project-2-instructions_files/anchor-4.2.2/anchor.min.js","mini-project-2-instructions_files/bowser-1.9.3/bowser.min.js","mini-project-2-instructions_files/distill-2.2.21/template.v2.js","mini-project-2-instructions_files/figure-html5/unnamed-chunk-1-1.png","mini-project-2-instructions_files/figure-html5/unnamed-chunk-2-1.png","mini-project-2-instructions_files/jquery-1.11.3/jquery.min.js","mini-project-2-instructions_files/pagedtable-1.1/css/pagedtable.css","mini-project-2-instructions_files/pagedtable-1.1/js/pagedtable.js","mini-project-2-instructions_files/popper-2.6.0/popper.min.js","mini-project-2-instructions_files/tippy-6.2.7/tippy-bundle.umd.min.js","mini-project-2-instructions_files/tippy-6.2.7/tippy-light-border.css","mini-project-2-instructions_files/tippy-6.2.7/tippy.css","mini-project-2-instructions_files/tippy-6.2.7/tippy.umd.min.js","mini-project-2-instructions_files/webcomponents-2.0.0/webcomponents.js","mini-project-2-instructions.html"]}
+  {"type":"character","attributes":{},"value":["blog_draft_files/anchor-4.2.2/anchor.min.js","blog_draft_files/bowser-1.9.3/bowser.min.js","blog_draft_files/distill-2.2.21/template.v2.js","blog_draft_files/figure-html5/Call of the Wild-1.png","blog_draft_files/figure-html5/Cellular Automata Graphic-1.png","blog_draft_files/figure-html5/Non-Polar Generative Art-1.png","blog_draft_files/figure-html5/Polar Generative Art-1.png","blog_draft_files/figure-html5/Sentiment Snake Matrix-1.png","blog_draft_files/figure-html5/Swirly Alice in Wonderland-1.png","blog_draft_files/figure-html5/Swirly Art Repeating-1.png","blog_draft_files/figure-html5/Swirly Art-1.png","blog_draft_files/jquery-1.11.3/jquery.min.js","blog_draft_files/popper-2.6.0/popper.min.js","blog_draft_files/tippy-6.2.7/tippy-bundle.umd.min.js","blog_draft_files/tippy-6.2.7/tippy-light-border.css","blog_draft_files/tippy-6.2.7/tippy.css","blog_draft_files/tippy-6.2.7/tippy.umd.min.js","blog_draft_files/webcomponents-2.0.0/webcomponents.js","data/aschinchon_cellularautomata.cpp","data/mythbusters.csv","genart.png","images/reed-college-griffin-red.png","mini-project-2-instructions_files/anchor-4.2.2/anchor.min.js","mini-project-2-instructions_files/bowser-1.9.3/bowser.min.js","mini-project-2-instructions_files/distill-2.2.21/template.v2.js","mini-project-2-instructions_files/figure-html5/unnamed-chunk-1-1.png","mini-project-2-instructions_files/figure-html5/unnamed-chunk-2-1.png","mini-project-2-instructions_files/jquery-1.11.3/jquery.min.js","mini-project-2-instructions_files/pagedtable-1.1/css/pagedtable.css","mini-project-2-instructions_files/pagedtable-1.1/js/pagedtable.js","mini-project-2-instructions_files/popper-2.6.0/popper.min.js","mini-project-2-instructions_files/tippy-6.2.7/tippy-bundle.umd.min.js","mini-project-2-instructions_files/tippy-6.2.7/tippy-light-border.css","mini-project-2-instructions_files/tippy-6.2.7/tippy.css","mini-project-2-instructions_files/tippy-6.2.7/tippy.umd.min.js","mini-project-2-instructions_files/webcomponents-2.0.0/webcomponents.js","mini-project-2-instructions.html"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
 <meta name="distill:offset" content="../.."/>
@@ -2583,6 +2583,7 @@ d-appendix d-footnote-list a.footnote-backlink {
 </div>
 </details>
 </div>
+<h2 id="randomly-genrating-art">Randomly GenRating Art</h2>
 <p>The first art generation tool we created was inspired by the [‘generativeart’ library] (<a href="https://github.com/cutterkom/generativeart" class="uri">https://github.com/cutterkom/generativeart</a>). This works by using random number generation –based on the sentiment score of the book– and the positive and negative sentiment values calculated previously. So, each artwork produced with this method is unique and dependent on a specific text’s sentiment. This means that texts with more extreme sentiments tend to yield more varied results. If you dig into the formula in the code below, you can see that a sine and cosine function are being multiplied by ‘senti_neg’ and ‘senti_pos’ respectively. So, a larger value for either ‘senti_neg’ or ‘senti_pos’ will make their corresponding function more extreme. We made [this graph] (<a href="https://www.desmos.com/calculator/zbvdvoyfcn" class="uri">https://www.desmos.com/calculator/zbvdvoyfcn</a>) on desmos as it provides a more intuitive explanation of this interaction. For this piece, we also wanted the colors and titles to be rooted in the text data. The artpiece’s colors are simply the two most common colors to appear in the text. The artpiece’s title is a random sample of three words from the sentiment analysis which are selected based on a word’s proportion of appearance in the text, so words that appear more often are more likely to appear in the title. The lovely generated title for this next piece is “Grand Commit Fan.” For aesthetic reasons we chose to not include the title on our output, though this is toggleable through the function ‘generative_art’ with ‘title = TRUE’. ‘title = TRUE’ will put the generated title in the bottom right corner.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2684,6 +2685,7 @@ d-appendix d-footnote-list a.footnote-backlink {
 </details>
 <p><img src="blog_draft_files/figure-html5/Non-Polar%20Generative%20Art-1.png" width="624" /></p>
 </div>
+<h2 id="tunnel-art">Tunnel aRt</h2>
 <p>Our next attempt at data art is based off of [Jean Fan’s tunnel art] (<a href="https://jean.fan/art-with-code/portfolio/20180721_tunnel/" class="uri">https://jean.fan/art-with-code/portfolio/20180721_tunnel/</a>). This plot does not use randomization like the ones above. Instead, it takes a series of rectangles which incrementally “push back” and rotate to create a spiral shape. The rotation angle is based upon the raw sentiment score of the text and again, the colors used are pulled from the text. We’re working with a different text than the previous pieces, so we’ll need to re-run most of our previous code. This time we’re working with “The Scarlett Letter” to hopefully get some striking colors. The only difference between these two swirling art pieces is how often the colors repeat. The first has no repetition, while the second has repetition based on the positive sentiment of the piece –the more positive, the more repetition that occurs.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2768,7 +2770,7 @@ d-appendix d-footnote-list a.footnote-backlink {
 </code></pre>
 </div>
 </details>
-<p><img src="blog_draft_files/figure-html5/Swirly%20Art-1.png" width="624" /></p>
+<p><img src="blog_draft_files/figure-html5/Swirly%20Art-1.png" width="624" style="display: block; margin: auto;" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2794,8 +2796,84 @@ d-appendix d-footnote-list a.footnote-backlink {
 </code></pre>
 </div>
 </details>
-<p><img src="blog_draft_files/figure-html5/Swirly%20Art%20Repeating-1.png" width="624" /></p>
+<p><img src="blog_draft_files/figure-html5/Swirly%20Art%20Repeating-1.png" width="624" style="display: block; margin: auto;" /></p>
 </div>
+<p>Lastly for the tunnel art, I just could not help myself but to show you the piece made from Alice’s Adventures in Wonderland –the rabbit hole parallels were just too tempting.</p>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>Show code</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>text_num</span> <span class='op'>&lt;-</span> <span class='fl'>11</span>
+
+<span class='va'>text</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://docs.ropensci.org/gutenbergr/reference/gutenberg_download.html'>gutenberg_download</a></span><span class='op'>(</span><span class='va'>text_num</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>text <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/case.html'>str_to_lower</a></span><span class='op'>(</span><span class='va'>text</span>, locale <span class='op'>=</span> <span class='st'>"en"</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='va'>afinn</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/get_sentiments.html'>get_sentiments</a></span><span class='op'>(</span><span class='st'>"afinn"</span><span class='op'>)</span>
+
+<span class='va'>text_afinn</span> <span class='op'>&lt;-</span> <span class='va'>text</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/unnest_tokens.html'>unnest_tokens</a></span><span class='op'>(</span>output <span class='op'>=</span> <span class='va'>word</span>, input <span class='op'>=</span> <span class='va'>text</span>, token <span class='op'>=</span> <span class='st'>"words"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>count</span><span class='op'>(</span><span class='va'>word</span>, sort <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>inner_join</span><span class='op'>(</span><span class='va'>afinn</span>, by <span class='op'>=</span> <span class='st'>"word"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'>mutate</span><span class='op'>(</span>prob <span class='op'>=</span> <span class='va'>n</span><span class='op'>/</span><span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> 
+
+<span class='va'>text_neg</span> <span class='op'>&lt;-</span> <span class='va'>text_afinn</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>value</span> <span class='op'>&lt;</span> <span class='fl'>0</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='va'>text_pos</span> <span class='op'>&lt;-</span> <span class='va'>text_afinn</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>value</span> <span class='op'>&gt;</span> <span class='fl'>0</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='va'>senti_neg</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>text_neg</span><span class='op'>[[</span><span class='st'>"n"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>*</span><span class='va'>text_neg</span><span class='op'>[[</span><span class='st'>"value"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span><span class='op'>/</span><span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>text_neg</span><span class='op'>[[</span><span class='st'>"n"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span>
+
+<span class='va'>senti_pos</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>text_pos</span><span class='op'>[[</span><span class='st'>"n"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>*</span><span class='va'>text_pos</span><span class='op'>[[</span><span class='st'>"value"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span><span class='op'>/</span><span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>text_pos</span><span class='op'>[[</span><span class='st'>"n"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span>
+
+<span class='va'>senti_raw</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>text_afinn</span><span class='op'>[[</span><span class='st'>"n"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>*</span><span class='va'>text_afinn</span><span class='op'>[[</span><span class='st'>"value"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span><span class='op'>/</span><span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>text_afinn</span><span class='op'>[[</span><span class='st'>"n"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span>
+
+<span class='va'>text_grammed</span> <span class='op'>&lt;-</span> <span class='va'>text</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/unnest_tokens.html'>unnest_tokens</a></span><span class='op'>(</span>output <span class='op'>=</span> <span class='va'>word</span>, input <span class='op'>=</span> <span class='va'>text</span>,
+  token <span class='op'>=</span> <span class='st'>"ngrams"</span>, n <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
+
+<span class='va'>colors_parsed</span> <span class='op'>&lt;-</span> <span class='va'>text_grammed</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>Name <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_extract.html'>str_extract</a></span><span class='op'>(</span><span class='va'>word</span>, pattern <span class='op'>=</span> <span class='va'>colors_all</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>drop_na</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>select</span><span class='op'>(</span><span class='va'>Name</span><span class='op'>)</span>
+
+<span class='va'>colors_counted</span> <span class='op'>&lt;-</span> <span class='va'>colors_parsed</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>Name</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>count</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>mutate</span><span class='op'>(</span>prob <span class='op'>=</span> <span class='va'>n</span><span class='op'>/</span><span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span><span class='op'>)</span>
+  
+<span class='va'>colors_final</span> <span class='op'>&lt;-</span> <span class='fu'>left_join</span><span class='op'>(</span><span class='va'>colors_counted</span>, <span class='va'>colors_scrape</span>, by <span class='op'>=</span> <span class='st'>"Name"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>select</span><span class='op'>(</span><span class='va'>Name</span>, <span class='va'>`Hex(RGB)`</span>, <span class='va'>n</span>, <span class='va'>prob</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>rename</span><span class='op'>(</span>Hex <span class='op'>=</span> <span class='va'>`Hex(RGB)`</span><span class='op'>)</span> 
+
+<span class='va'>vp</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/grid/viewport.html'>viewport</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='fl'>0</span>, y <span class='op'>=</span> <span class='fl'>0</span>, width <span class='op'>=</span> <span class='fl'>1</span>, height <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/grid/grid.show.viewport.html'>grid.show.viewport</a></span><span class='op'>(</span><span class='va'>vp</span><span class='op'>)</span>
+
+<span class='va'>colors_swirl</span> <span class='op'>&lt;-</span> <span class='va'>colors_final</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>slice_head</span><span class='op'>(</span>n <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
+
+<span class='va'>colors</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/grDevices/colorRamp.html'>colorRampPalette</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>colors_swirl</span><span class='op'>$</span><span class='va'>Hex</span><span class='op'>)</span><span class='op'>)</span><span class='op'>(</span><span class='fl'>100</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>senti_pos</span><span class='op'>)</span> <span class='op'>+</span> <span class='fl'>1</span><span class='op'>)</span>
+
+<span class='fu'><a href='https://rdrr.io/r/grid/viewports.html'>pushViewport</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/grid/viewport.html'>viewport</a></span><span class='op'>(</span>width <span class='op'>=</span> <span class='fl'>1</span>, height <span class='op'>=</span> <span class='fl'>1</span>, angle <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='fu'><a href='https://rdrr.io/r/grid/grid.rect.html'>grid.rect</a></span><span class='op'>(</span>gp <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/gpar.html'>gpar</a></span><span class='op'>(</span>col <span class='op'>=</span> <span class='cn'>NA</span>, fill <span class='op'>=</span> <span class='va'>colors</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='kw'>for</span><span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>2</span><span class='op'>:</span><span class='fl'>500</span><span class='op'>)</span><span class='op'>{</span>
+  <span class='fu'><a href='https://rdrr.io/r/grid/viewports.html'>pushViewport</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/grid/viewport.html'>viewport</a></span><span class='op'>(</span>width <span class='op'>=</span> <span class='fl'>0.99</span>, height <span class='op'>=</span> <span class='fl'>0.99</span>, angle <span class='op'>=</span> <span class='fl'>10</span><span class='op'>*</span><span class='va'>senti_raw</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='fu'><a href='https://rdrr.io/r/grid/grid.rect.html'>grid.rect</a></span><span class='op'>(</span>gp <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/gpar.html'>gpar</a></span><span class='op'>(</span>col <span class='op'>=</span> <span class='cn'>NA</span>, fill <span class='op'>=</span> <span class='va'>colors</span><span class='op'>[</span><span class='va'>i</span><span class='op'>]</span><span class='op'>)</span>
+  <span class='op'>)</span>
+<span class='op'>}</span>
+</code></pre>
+</div>
+</details>
+<p><img src="blog_draft_files/figure-html5/Swirly%20Alice%20in%20Wonderland-1.png" width="624" style="display: block; margin: auto;" /></p>
+</div>
+<h2 id="tracing-sentiment-snakes">Tracing Sentiment Snakes</h2>
 <p>Our next attempt at art was a little more straightforward. In the following 16 plots, we plotted every word with a sentiment from the beginning of the text to the end, in order. Starting at the origin (marked with a red dot), a line of length 1 is drawn in the direction corresponding to the sentiment of the word. A line to the left means a negative sentiment. A line to the right means a positive sentiment. The more the line angles down, the stronger the sentiment. For example, a word with the sentiment of +1 would draw a line up and to the right. A word with the sentiment of -5 would draw a line down and to the left. This not only produces visually interesting art, but also helps to convey a story that might otherwise be lost with a typical graph, namely seeing how a text becomes positive or negative over its duration. The general idea for this piece was based on [Nadieh Bremer’s visualizations] (<a href="https://www.visualcinnamon.com/2015/01/exploring-art-hidden-in-pi/" class="uri">https://www.visualcinnamon.com/2015/01/exploring-art-hidden-in-pi/</a>) of pi.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2896,7 +2974,7 @@ d-appendix d-footnote-list a.footnote-backlink {
 </code></pre>
 </div>
 </details>
-<p><img src="blog_draft_files/figure-html5/Sentiment%20Snake%20Matrix-1.png" width="672" /></p>
+<p><img src="blog_draft_files/figure-html5/Sentiment%20Snake%20Matrix-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <p>Let’s look at just one example in closer detail so you can better see exactly what is happening. This plot is produced by the text Call of the Wild by Jack London.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -2909,6 +2987,10 @@ d-appendix d-footnote-list a.footnote-backlink {
 </details>
 <p><img src="blog_draft_files/figure-html5/Call%20of%20the%20Wild-1.png" width="480" style="display: block; margin: auto;" /></p>
 </div>
+<p>If you’re interested seeing what your favorite text looks as one of these plots we made a handy ‘shinyApp’, just type in a title or use the drop-down menu. There is a chance that some plots might not work or that you may experience one or two bugs, but this app is most for fun, so we did not test it extensively.</p>
+<iframe src="https://maxvanlan.shinyapps.io/ShinySnake/" class="l-screen-inset shaded" height="500px" width="600px">
+</iframe>
+<h2 id="d-art-with-rayshader">3D Art with ‘rayshader’</h2>
 <p>Our last art generation takes our data art to the next level. The <code>rayshader</code> package contains a <code>save_3Dprint</code> function that can turn 3D models into printable files. This function gives us the potential to turn our data art into a physical object. We generate art for the rayshader models using cellular automata. Cellular automata are a complex mathematical concept that even we cannot fully explain despite having worked with cellular automata to generate this art. Wikipedia defines a cellular automaton as “a discrete model of computation.” Probably a more helpful explanation can be found in youtube videos and tutorials. From our own research we’ve come to understand a cellular automaton as a collection of cells in a grid. The simplest version of a cellular automaton has 2 states, on and off which are indicated by black and white, respectively. A cell that is turned on has the power to decide the state of surrounding cells depending on a neighborhood which is specified in the creation of the automaton. When talking about cellular automata, neighborhoods are certain patterns of cells that are created by mathematical functions. Different neighborhoods give an automaton different visual behaviors. A blog post by Antonio Sánchez Chinchón lists all of the parameters required to produce a cellular automaton in R and also, provides the code that helped us create our art.</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
@@ -2921,13 +3003,13 @@ d-appendix d-footnote-list a.footnote-backlink {
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ambient.data-imaginist.com'>ambient</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/dmurdoch/rgl'>rgl</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-forge.r-project.org/projects/rgl/'>rgl</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='st'>"plot3Drgl"</span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://www.rayrender.net'>rayrender</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://devtools.r-lib.org/'>devtools</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/EmilHvitfeldt/textdata'>textdata</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/rstudio/distill'>distill</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/RcppCore/RcppArmadillo'>RcppArmadillo</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://dirk.eddelbuettel.com/code/rcpp.armadillo.html'>RcppArmadillo</a></span><span class='op'>)</span>
 
 <span class='co'>#cellular automata</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://www.rcpp.org'>Rcpp</a></span><span class='op'>)</span>
@@ -3114,7 +3196,7 @@ d-appendix d-footnote-list a.footnote-backlink {
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'>#rayshader</span>
 
-<span class='fu'><a href='https://www.rayshader.com/reference/plot_gg.html'>plot_gg</a></span><span class='op'>(</span><span class='va'>ggobj</span>, solid <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/pkg/rayshader/man/plot_gg.html'>plot_gg</a></span><span class='op'>(</span><span class='va'>ggobj</span>, solid <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 </code></pre>
 </div>
 </details>
