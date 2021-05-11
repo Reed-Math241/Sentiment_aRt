@@ -522,6 +522,7 @@ Our last art generation takes our data art to the next level. The `rayshader` pa
 
 library(rayshader)
 library(here)
+library(magrittr)
 library(raster)
 library(sf)
 library(dplyr)
@@ -544,11 +545,13 @@ library(reshape2)
 
 We start with the same first steps at the previous art generation experiments. After loading all of the necessary libraries, we perform sentiment analysis to help decide our automaton parameters. In this case, we used the `nrc` lexicon in the `get_sentiments` function instead of the `afinn` lexicon. While the afinn lexicon performs a numerical sentiment analysis, the nrc lexicon performs analysis by categorizing words into one of 8 sentiments. We can later use the top sentiment of a text to decide the neighborhood of our automaton. 
 
+
+#The strongest sentiment in this text is anticipation!
 ```{r NRC Text Sentiments, code_folding = TRUE}
 #loading and analyzing text sentiments
 text_num_cellauto <- 11 #alice's adventure in wonderland
 
-text_cellauto <- gutenberg_download(text_num) %>%
+text_cellauto <- gutenberg_download(text_num_cellauto) %>%
   mutate(text = str_to_lower(text, locale = "en"))
 
 nrc <- get_sentiments("nrc")
@@ -571,17 +574,20 @@ nrc_count <- text_stopped %>%
   dplyr::select(!word) %>%
   unique() %>%
   filter(sentiment != "positive") %>%
-  filter(sentiment != "negative")
+  filter(sentiment != "negative") %>%
+  print()
 
 #the strongest sentiment in this text is anticipation!
 
 ```
 
+
 In the next steps we join the Wikipedia color table  with the ngram data frame of the selected text. In this example, we look at Alice's Adventure in Wonderland.
 
 ```{r Color Correspondence, code_folding = TRUE}
+
 #creating color correespondence 
-text_grammed_cellauto <- text %>%
+text_grammed_cellauto <- text_cellauto %>%
   unnest_tokens(output = word, input = text,
   token = "ngrams", n = 3)
 
@@ -605,7 +611,7 @@ colors_final_cellauto <- left_join(colors_counted_cellauto, colors_scrape, by = 
 
 We finally start building our cellular automaton. We pull Antonio Chinchón’s C++ functions from his github to get started. Feeding this code into R is easy. Simply create a new C++ file in R and paste the code from github. Save the C++ file and return to your R project file. Use the `sourceCpp()` function to feed the C++ code into your R code. Voila! These functions are performing mathematical tasks to ensure the proper operation of our cellular automaton. Honestly, as R coders, the details of these functions purposes are a mystery to us. We only know as much as the code comments tell us. Moving on...
 
-```{r C++ Source Code, code_folding = TRUE}
+```{r C++ Source Code, code_folding = FALSE}
 #C++ fxns from aschinchon github
 
 sourceCpp("data/aschinchon_cellularautomata.cpp")
@@ -614,8 +620,10 @@ sourceCpp("data/aschinchon_cellularautomata.cpp")
 
 Next, we pull code for two more functions from Antonio Chinchón’s github. The `initial_grid` function does exactly what the name suggests: create the initial grid for the automaton. Not much creativity is involved in the grid creation, so we leave this code as is from the github. The `convolution_indexes` function creates neighborhoods to give our automatons. While this code requires creativity, it also requires an understanding of complex mathematical concepts. After extensive research of cellular automata neighborhoods, we chose 8 neighborhood formulas from the original github function based on how well we thought the patterns represented each `nrc` sentiment (a very scientific and objective process). Now, we have written all of the necessary functions to create our own cellular automata. 
 
-#SPECIFY NEIGHBORHOODS
-```{r Cellular Automata R Functions, code_folding = TRUE}
+
+#Neighborhood Specifications
+```{r Cellular Automata R Functions, code_folding = FALSE}
+
 #cyclic cellular automata fxns from aschinchon 
 
 initial_grid <- function(s, w, h){
@@ -627,14 +635,14 @@ initial_grid <- function(s, w, h){
 
 convolution_indexes <- function(r, n){
   crossing(x = -r:r, y = -r:r) %>% 
-    mutate(M = ((x != 0) | (y != 0)) * 1 ,
+    mutate(M = ((x != 0) | (y != 0)) * 1,  #Surprise
            N = (abs(x) + abs(y) <= r) * M, #Anticipation
-           Cr = ((x == 0) | (y == 0)) * M,
-           S1 = (((x > 0) & (y > 0))|((x < 0) & (y < 0))) * 1,
-           Bl = (abs(x) == abs(y)) * M,
-           D1 = (abs(x) > abs(y)) * M,
-           Z = ((abs(y) == r) | (x == y)) * M,
-           TM = ((abs(x) == abs(y)) | abs(x) == r | abs(y) == r) * M) %>% 
+           Cr = ((x == 0) | (y == 0)) * M, #Anger
+           S1 = (((x > 0) & (y > 0))|((x < 0) & (y < 0))) * 1, #Fear
+           Bl = (abs(x) == abs(y)) * M, #Joy 
+           D1 = (abs(x) > abs(y)) * M, #Sadness
+           Z = ((abs(y) == r) | (x == y)) * M, #Disgust
+           TM = ((abs(x) == abs(y)) | abs(x) == r | abs(y) == r) * M) %>% #Trust
     dplyr::select(x, y, matches(n)) %>% 
     filter_at(3, all_vars(. > 0)) %>% 
     dplyr::select(x,y)
@@ -689,7 +697,7 @@ Use the data frame to plot the automaton with the `geom_raster` function. Within
 ```{r Cellular Automata Graphic, code_folding = TRUE}
 #plot cells
 
-colors <- colors_final$Hex
+colors <- colors_final_cellauto$Hex
 
 ggobj = ggplot(data = df, aes(x = x, y = y, fill = v)) + 
   geom_raster(interpolate = TRUE) +
@@ -712,9 +720,96 @@ plot_gg(ggobj, solid = TRUE)
 
 ```
 
-Time permitting, we would have loved to take this project a step further in terms of reproducibility. We believe that a function that automates the creation of a text data cellular automaton is a time-consuming but worthwhile project for the future. In our vision, the function requires a single input: a gutenbergr text number. The function would perform the same `nrc` text analysis we already wrote to identify the given text’s strongest sentiment. The function would then choose the neighborhood that we would have liked to match to the identified popular sentiment. Finally, the function would choose the cellular automaton’s 10 colors using the color and text code we’ve already written. There would be two outputs: the data frame and the `rayshader` plot. In this imagined function, the number of `range`, `states`, and `threshold` would always stay the same. The iterations, `width`, and `height` would be optional, adjustable inputs for the function. Ultimately, we would be able to produce unique art pieces with one line of code, and we would be able to make a physical copy with just one more line. 
+Here's one more example with The Strange Case of Dr. Jekyll and Mr. Hyde! The strongest sentiment here is anger.
+
+```{r}
+#loading and analyzing text sentiments
+text_num_cellauto2 <- 42 #The Strange Case of Dr. Jekyll and Mr. Hyde
+
+text_cellauto2 <- gutenberg_download(text_num_cellauto2) %>%
+  mutate(text = str_to_lower(text, locale = "en"))
+
+nrc2 <- get_sentiments("nrc")
+data("stop_words")
+
+text_stopped2 <- text_cellauto2 %>%
+  unnest_tokens(output = word, input = text, token = "words") %>%
+  count(word, sort = TRUE) %>%
+  anti_join(stop_words, by = "word") 
+
+text_nrc2 <- text_stopped2 %>%
+  inner_join(nrc, by = "word") %>% 
+  mutate(prop = n/sum(n)) %>%
+  arrange(desc(n))
+
+nrc_count2 <- text_stopped2 %>%
+  inner_join(nrc, by = "word") %>%
+  group_by(sentiment) %>%
+  mutate(n = sum(n)) %>%
+  dplyr::select(!word) %>%
+  unique() %>%
+  filter(sentiment != "positive") %>%
+  filter(sentiment != "negative")
+
+
+#creating color correespondence 
+text_grammed_cellauto2 <- text_cellauto2 %>%
+  unnest_tokens(output = word, input = text,
+  token = "ngrams", n = 3)
+
+colors_parsed_cellauto2 <- text_grammed_cellauto2 %>%
+  mutate(Name = str_extract(word, pattern = colors_all)) %>%
+  drop_na() %>%
+  dplyr::select(Name)
+
+colors_counted_cellauto2 <- colors_parsed_cellauto2 %>%
+  group_by(Name) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(prop = n/sum(n)) %>%
+  arrange(desc(n))
+
+colors_final_cellauto2 <- left_join(colors_counted_cellauto2, colors_scrape, by = "Name") %>%
+  dplyr::select(Name, `Hex(RGB)`, n, prop) %>%
+  rename(Hex = `Hex(RGB)`)
+
+range <- 1 #depth of the neighborhood 
+threshold <- 1 #cell limit
+states <- 10 #maximum number of states allowed (algorithm M) 
+neighborhood <- "Cr" #pattern of neighboring cells
+iter <- 171 #number of iterations
+
+width  <- 150
+height <- 150
+
+X_ <- initial_grid(s = states,
+                  w = width,
+                  h = height)
+
+L_ <- convolution_indexes(r = range, n = neighborhood)
+  
+for (i in 1:iter){
+  sourceCpp(here("./_posts/2021-03-07-mini-project-2-instructions/data/aschinchon_cellularautomata.cpp"))
+    X_ <- iterate_cyclic(X_, L_, states, threshold)  
+}
+
+df2 <- melt(X_)
+colnames(df2) <- c("x","y","v") # to name columns
+
+colors2 <- colors_final_cellauto2$Hex
+
+ggobj2 = ggplot(data = df2, aes(x = x, y = y, fill = v)) + 
+  geom_raster(interpolate = TRUE) +
+  coord_equal() +
+  scale_fill_gradientn(colours = colors2) +
+  scale_y_continuous(expand = c(0,0)) + 
+  scale_x_continuous(expand = c(0,0)) +
+  theme_nothing() 
+ggobj2
+
+```
+
+Time permitting, we would have loved to take this project a step further in terms of reproducibility.We believe that a function that automates the creation of a text data cellular automaton is a time-consuming but worthwhile project for the future. In our vision, the function requires a single input: a gutenbergr text number. The function would perform the same `nrc` text analysis we already wrote to identify the given text’s strongest sentiment. The function would then choose the neighborhood that we would have liked to match to the identified popular sentiment. Finally, the function would choose the cellular automaton’s 10 colors using the color and text code we’ve already written. There would be two outputs: the data frame and the `rayshader` plot. In this imagined function, the number of `range`, `states`, and `threshold` would always stay the same. The iterations, `width`, and `height` would be optional, adjustable inputs for the function. Ultimately, we would be able to produce unique art pieces with one line of code, and we would be able to make a physical copy with just one more line. 
 All we would need is two lines of code to become an artist! Imagine that...
-
-
 
 
