@@ -752,7 +752,7 @@ nrc_count2 <- text_stopped2 %>%
   filter(sentiment != "negative")
 
 
-#creating color correespondence 
+#creating color correspondence 
 text_grammed_cellauto2 <- text_cellauto2 %>%
   unnest_tokens(output = word, input = text,
   token = "ngrams", n = 3)
