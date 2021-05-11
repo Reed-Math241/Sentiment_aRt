@@ -535,6 +535,8 @@ library(devtools)
 library(textdata)
 library(distill)
 library(RcppArmadillo)
+library(av)
+library(magick)
 
 #cellular automata
 library(Rcpp)
@@ -715,8 +717,11 @@ The `rayshader` models can only be viewed on a local installation of R. An R stu
 ```{r Rayshader Models, code_folding = TRUE}
 #rayshader
 
-plot_gg(ggobj, solid = TRUE)
+filename_map = tempfile()
 
+plot_gg(ggobj, solid = TRUE, multicore = TRUE, 
+        fov = 30, zoom = 0.5, theta = 228, phi = 50)
+render_depth(focus = 0.50, focallength = 200)
 
 ```
 
@@ -806,6 +811,12 @@ ggobj2 = ggplot(data = df2, aes(x = x, y = y, fill = v)) +
   scale_x_continuous(expand = c(0,0)) +
   theme_nothing() 
 ggobj2
+
+plot_gg(ggobj2, solid = TRUE, multicore = TRUE, 
+        fov = 30, zoom = 0.4, theta = 180, phi = 75)
+render_depth(focus = 0.55, focallength = 200)
+
+knitr::include_graphics("images/treelong.jpeg")
 
 ```
 
