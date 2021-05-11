@@ -722,9 +722,12 @@ plot_gg(ggobj, solid = TRUE, multicore = TRUE,
         fov = 30, zoom = 0.5, theta = 228, phi = 50)
 render_depth(focus = 0.50, focallength = 200)
 
+
+save_3dprint(filename_map)
+
 ```
 
-``` {r Rayshader Output}
+``` {r Rayshader Output, include = FALSE}
 
 knitr::include_graphics("images/000067.png")
 
@@ -827,7 +830,7 @@ render_depth(focus = 0.55, focallength = 200)
 
 ```
 
-```{r Additional Rayshader Output}
+```{r Additional Rayshader Output, include = FALSE}
 
 knitr::include_graphics("images/000017.png")
 
