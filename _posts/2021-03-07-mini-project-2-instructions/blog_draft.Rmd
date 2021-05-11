@@ -514,7 +514,7 @@ If you're interested seeing what your favorite text looks as one of these plots 
 
 <iframe src="https://maxvanlan.shinyapps.io/ShinySnake/" class="l-screen-inset shaded" height="500px" width="600px"></iframe>
 
-## 3D Art with 'rayshader'
+## 3D Art with `rayshader`
 
 Our last art generation takes our data art to the next level. The `rayshader` package contains a `save_3Dprint` function that can turn 3D models into printable files. This function gives us the potential to turn our data art into a physical object. We generate art for the rayshader models using cellular automata. Cellular automata are a complex mathematical concept that even we cannot fully explain despite having worked with cellular automata to generate this art. Wikipedia defines a cellular automaton as “a discrete model of computation.” Probably a more helpful explanation can be found in youtube videos and tutorials. From our own research we’ve come to understand a cellular automaton as a collection of cells in a grid. The simplest version of a cellular automaton has 2 states, on and off which are indicated by black and white, respectively. A cell that is turned on has the power to decide the state of surrounding cells depending on a neighborhood which is specified in the creation of the automaton. When talking about cellular automata, neighborhoods are certain patterns of cells that are created by mathematical functions. Different neighborhoods give an automaton different visual behaviors. A blog post by Antonio Sánchez Chinchón lists all of the parameters required to produce a cellular automaton in R and also, provides the code that helped us create our art. 
 
@@ -535,7 +535,6 @@ library(devtools)
 library(textdata)
 library(distill)
 library(RcppArmadillo)
-library(av)
 library(magick)
 
 #cellular automata
@@ -714,7 +713,7 @@ ggobj
 
 The `rayshader` models can only be viewed on a local installation of R. An R studio server will not be able to produce the rgl device window which is necessary to view 3D models. If using a Mac, make sure to download and open XQuartz before running the `rayshader` code. Macs will not be able to open an rgl device window without XQuartz. Once you have adjusted the `rayshader` code to produce a model of your liking, use the `save_3Dprint` function to produce a file that you can take to your local 3D printer, wherever that may be. 
 
-```{r Rayshader Models, code_folding = TRUE}
+```{r Rayshader Model, code_folding = TRUE, eval = FALSE}
 #rayshader
 
 filename_map = tempfile()
@@ -725,9 +724,15 @@ render_depth(focus = 0.50, focallength = 200)
 
 ```
 
+``` {r Rayshader Output}
+
+knitr::include_graphics("images/000067.png")
+
+```
+
 Here's one more example with The Strange Case of Dr. Jekyll and Mr. Hyde! The strongest sentiment here is anger.
 
-```{r}
+```{r Additional Rayshader Example}
 #loading and analyzing text sentiments
 text_num_cellauto2 <- 42 #The Strange Case of Dr. Jekyll and Mr. Hyde
 
@@ -812,11 +817,19 @@ ggobj2 = ggplot(data = df2, aes(x = x, y = y, fill = v)) +
   theme_nothing() 
 ggobj2
 
+```
+
+```{r Additional Rayshader Model, eval = FALSE}
+
 plot_gg(ggobj2, solid = TRUE, multicore = TRUE, 
         fov = 30, zoom = 0.4, theta = 180, phi = 75)
 render_depth(focus = 0.55, focallength = 200)
 
-knitr::include_graphics("images/treelong.jpeg")
+```
+
+```{r Additional Rayshader Output}
+
+knitr::include_graphics("images/000017.png")
 
 ```
 
