@@ -439,6 +439,7 @@ Our last art generation takes our data art to the next level. The `rayshader` pa
 ```{r Cellular Automata and Rayshader Libraries, code_folding = TRUE}
 
 library(rayshader)
+library(here)
 library(raster)
 library(sf)
 library(dplyr)
@@ -525,7 +526,7 @@ We finally start building our cellular automaton. We pull Antonio Chinchón’s 
 ```{r C++ Source Code, code_folding = TRUE}
 #C++ fxns from aschinchon github
 
-sourceCpp('aschinchon_cellularautomata.cpp')
+sourceCpp("data/aschinchon_cellularautomata.cpp")
 
 ```
 
